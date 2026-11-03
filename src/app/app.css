@@ -8,6 +8,10 @@ app-root {
   margin: 0 auto;
 }
 
+.shell.shell-wide {
+  width: calc(100% - 48px);
+}
+
 .topbar {
   display: flex;
   height: 74px;
@@ -1349,9 +1353,25 @@ h2 {
 }
 
 .report-preview {
+  width: 100%;
+  margin: 0;
   min-height: 0;
   border: 1px solid var(--border-strong);
   border-radius: 8px;
+}
+
+.report-preview h1 {
+  margin: 0;
+  padding-bottom: 20px;
+}
+
+.report-preview .progress-list {
+  max-width: none;
+  margin: 0;
+}
+
+.report-preview .progress-row:first-child .progress-section {
+  margin-top: 0;
 }
 
 .error-actions {

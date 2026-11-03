@@ -165,6 +165,14 @@ export async function buildReportEmail(source: HTMLElement): Promise<BuiltReport
 
   for (const [from, to] of pairs) {
     to.style.cssText = inlineStyle(from);
+    if (from.matches('.report-preview h1')) {
+      // Zero margins are not inlined, so set them to stop the email client's default heading margins.
+      to.style.margin = '0';
+    }
+    if (from.matches('.progress-row:first-child .progress-section')) {
+      // A zero margin is not inlined, so without this the email client's default heading margin would apply.
+      to.style.marginTop = '0';
+    }
     if (from.matches('.progress-list')) {
       // The centred list leaves a wide left margin on screen; in the email it should sit flush left.
       to.style.margin = '0';

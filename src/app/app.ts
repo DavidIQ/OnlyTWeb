@@ -37,7 +37,7 @@ const COUNSEL_ALLOWED_SECONDS = 60;
 } @else if (isProgressMode) {
   <main app-progress-page [meeting]="activeMeeting" [rows]="progressRows"></main>
 } @else {
-<main class="shell">
+<main class="shell" [class.shell-wide]="showReport">
   <header class="topbar">
     <a class="brand" href="./" aria-label="OnlyT Web">
       <img class="brand-mark" src="icon4.png" alt="" />
