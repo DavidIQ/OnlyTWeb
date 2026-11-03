@@ -1,0 +1,497 @@
+<ng-template #languagePicker>
+  <label class="language-picker">
+    <span class="visually-hidden">{{ t('language.label') }}</span>
+    <select
+      [ngModel]="i18n.language"
+      (ngModelChange)="onLanguageChange($event)"
+      [attr.aria-label]="t('language.label')"
+    >
+      @for (language of i18n.languages; track language.code) {
+        <option [value]="language.code">{{ language.name }}</option>
+      }
+    </select>
+  </label>
+</ng-template>
+
+@if (isDisplayMode) {
+  <main
+    class="display-mode"
+    [class.running]="isRunning"
+    [class.overtime]="isOvertime"
+    [class.closing]="isClosing"
+  >
+    <div class="display-time" aria-live="off">
+      {{ isRunning ? formatTimer(displayedSeconds) : clockText }}
+    </div>
+    <a class="display-progress-link" href="/progress">{{ t('progress.link') }}</a>
+  </main>
+} @else if (isProgressMode) {
+  <main class="progress-page">
+    <header class="progress-header">
+      <h1>{{ t(activeMeeting === 'weekend' ? 'progress.titleWeekend' : 'progress.titleMidweek') }}</h1>
+      <div class="progress-actions">
+        <a href="/display">{{ t('progress.back') }}</a>
+        <ng-container *ngTemplateOutlet="languagePicker"></ng-container>
+      </div>
+    </header>
+
+    <ng-container *ngTemplateOutlet="progressList"></ng-container>
+  </main>
+} @else {
+<main class="shell">
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="OnlyT Web">
+      <img class="brand-mark" src="icon4.png" alt="" />
+      <span>OnlyT <span class="brand-light">Web</span></span>
+    </a>
+    <div class="topbar-meta">
+      @if (status?.isRunning) {
+        <span class="clock">{{ t('top.timerLive') }}</span>
+      }
+      <ng-container *ngTemplateOutlet="languagePicker"></ng-container>
+    </div>
+  </header>
+
+  @if (errorMessage) {
+    <div class="error-banner" role="alert">
+      <span>{{ t(errorMessage) }}</span>
+      <span class="error-actions">
+        <button class="text-button" type="button" (click)="refresh()">{{ t('common.retry') }}</button>
+        <button class="text-button error-dismiss" type="button" [attr.aria-label]="t('common.dismiss')" (click)="errorMessage = ''">×</button>
+      </span>
+    </div>
+  }
+
+  @if (authenticated === false) {
+    <section class="setup-card pin-card">
+      <h1>{{ t('pin.title') }}</h1>
+      <p class="subheading">{{ t('pin.intro') }}</p>
+      <form class="pin-form" (ngSubmit)="submitPin()">
+        <input
+          class="pin-input"
+          name="pin"
+          type="password"
+          inputmode="numeric"
+          autocomplete="one-time-code"
+          maxlength="4"
+          pattern="[0-9]{4}"
+          [attr.aria-label]="t('pin.label')"
+          [(ngModel)]="pinValue"
+        />
+        @if (pinError) {
+          <p class="setup-error" role="alert">{{ t(pinError) }}</p>
+        }
+        <button class="start-button" type="submit" [disabled]="pinValue.length !== 4 || pinBusy">{{ t('pin.submit') }}</button>
+      </form>
+    </section>
+  } @else if (authenticated === null) {
+    <!-- checking session -->
+  } @else if (showSetup) {
+    <section class="setup-card">
+      <p class="eyebrow">{{ t('setup.eyebrow') }}</p>
+      <h1>{{ t('setup.title') }}</h1>
+      <p class="subheading">{{ t('setup.intro') }}</p>
+
+      <div class="setup-grid">
+        <div class="setup-options">
+          <h2>{{ t('setup.options') }}</h2>
+          <label class="setup-check">
+            <input
+              type="checkbox"
+              [(ngModel)]="setupOptions.isCircuitVisit"
+              (ngModelChange)="loadPreview()"
+            />
+            {{ t('setup.circuitVisit') }}
+          </label>
+          <p class="setup-note">{{ t('setup.note') }}</p>
+          <button
+            class="start-button setup-import"
+            type="button"
+            (click)="importMidweek()"
+            [disabled]="importing || previewFailed || !previewItems.length"
+          >
+            {{ importing ? t('setup.importing') : t('setup.import') }}
+          </button>
+        </div>
+
+        <div class="setup-preview">
+          <h2>{{ t('setup.preview') }}</h2>
+          @if (previewFailed) {
+            <p class="setup-error" role="alert">{{ t('setup.previewFailed') }}</p>
+          } @else {
+            <ol class="schedule-list">
+              @for (item of previewItems; track item.talkId; let index = $index) {
+                <li class="setup-row">
+                  <span class="schedule-index">{{ (index + 1).toString().padStart(2, '0') }}</span>
+                  <span class="schedule-content">
+                    <span class="schedule-title">{{ talkTitle(item) }}</span>
+                    <span class="schedule-section">{{ sectionName(item.meetingSectionNameInternal) }}</span>
+                  </span>
+                  <span class="schedule-duration">{{ t('setup.minutes', { n: item.originalDurationSecs / 60 }) }}</span>
+                </li>
+              }
+            </ol>
+            <p class="setup-total">
+              {{ t('setup.total') }}: {{ t('setup.minutes', { n: previewTotalSeconds / 60 }) }}
+            </p>
+          }
+        </div>
+      </div>
+    </section>
+  } @else if (hasMidweekSchedule) {
+  <section class="page-heading">
+    <div>
+      <h1>{{ t('heading.title') }}</h1>
+    </div>
+    <div class="heading-actions">
+      <button class="text-button" type="button" (click)="openSettings()" [attr.aria-expanded]="showSettings">
+        <svg class="cog-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        {{ t('settings.button') }}
+      </button>
+      <a class="display-link" href="/display" target="_blank" rel="noreferrer">{{ t('heading.openDisplay') }}</a>
+      <div class="session-chip">
+        <span class="session-dot" [class.running]="isRunning"></span>
+        {{ isRunning ? t('session.running') : t('session.ready') }}
+      </div>
+    </div>
+  </section>
+
+  @if (showSettings && settingsDraft; as draft) {
+    <section class="settings-card">
+      <h2>{{ t('settings.title') }}</h2>
+      <div class="settings-grid">
+        <fieldset>
+          <legend>{{ t('settings.midweek') }}</legend>
+          <label class="setup-field">
+            <span>{{ t('settings.start') }}</span>
+            <input type="time" [(ngModel)]="draft.midweekStart" />
+          </label>
+          <label class="setup-field">
+            <span>{{ t('settings.end') }}</span>
+            <input type="time" [(ngModel)]="draft.midweekEnd" />
+          </label>
+        </fieldset>
+        <fieldset>
+          <legend>{{ t('settings.weekend') }}</legend>
+          <label class="setup-field">
+            <span>{{ t('settings.day') }}</span>
+            <select [(ngModel)]="draft.weekendDay">
+              @for (day of weekdayOptions; track day.value) {
+                <option [ngValue]="day.value">{{ day.name }}</option>
+              }
+            </select>
+          </label>
+          <label class="setup-field">
+            <span>{{ t('settings.start') }}</span>
+            <input type="time" [(ngModel)]="draft.weekendStart" />
+          </label>
+          <label class="setup-field">
+            <span>{{ t('settings.end') }}</span>
+            <input type="time" [(ngModel)]="draft.weekendEnd" />
+          </label>
+        </fieldset>
+        <fieldset>
+          <legend>{{ t('settings.adaptive') }}</legend>
+          <label class="setup-field">
+            <select [(ngModel)]="draft.adaptiveMode">
+              <option value="none">{{ t('settings.adaptive.none') }}</option>
+              <option value="oneWay">{{ t('settings.adaptive.oneWay') }}</option>
+              <option value="twoWay">{{ t('settings.adaptive.twoWay') }}</option>
+            </select>
+          </label>
+        </fieldset>
+      </div>
+      <div class="settings-actions">
+        @if (settingsError) {
+          <p class="setup-error settings-error" role="alert">{{ t(settingsError) }}</p>
+        }
+        <button class="text-button" type="button" (click)="cancelSettings()">{{ t('common.cancel') }}</button>
+        <button class="start-button" type="button" (click)="saveSettings()" [disabled]="savingSettings">{{ t('common.save') }}</button>
+      </div>
+    </section>
+  } @else if (showReport) {
+    <section class="settings-card report-card">
+      <h2>{{ t('report.title') }}</h2>
+      <div class="report-from">
+        <span class="report-label">{{ t('report.from') }}</span>
+        <span class="report-from-address">{{ reportFrom }}</span>
+      </div>
+      <label class="setup-field">
+        <span>{{ t('report.recipients') }}</span>
+        <input type="text" name="recipients" autocomplete="email" [(ngModel)]="reportRecipients" [attr.aria-invalid]="!!reportError" />
+        <span class="field-hint">{{ t('report.hint') }}</span>
+      </label>
+      <div class="progress-page report-preview" #reportPreview>
+        <h1>{{ t(activeMeeting === 'weekend' ? 'progress.titleWeekend' : 'progress.titleMidweek') }}</h1>
+        <ng-container *ngTemplateOutlet="progressList"></ng-container>
+      </div>
+      <div class="settings-actions">
+        @if (reportError) {
+          <p class="setup-error settings-error" role="alert">{{ t(reportError) }}</p>
+        }
+        <button class="text-button" type="button" (click)="closeReport()">{{ t('common.cancel') }}</button>
+        <button class="start-button" type="button" (click)="sendReport(reportPreview)" [disabled]="sendingReport">{{ sendingReport ? t('report.sending') : t('report.send') }}</button>
+      </div>
+    </section>
+  } @else {
+  <div class="dashboard">
+    <section class="timer-column">
+      <article class="timer-card" [class.running]="isRunning" [class.overtime]="isOvertime" [class.closing]="isClosing">
+        <div class="timer-card-top circuit-toggle">
+          <label class="setup-check">
+            <input
+              type="checkbox"
+              [ngModel]="settings?.circuitVisit ?? false"
+              [disabled]="isRunning"
+              (ngModelChange)="updateSetting({ circuitVisit: $event })"
+            />
+            {{ t('setup.circuitVisit') }}
+          </label>
+        </div>
+        <div class="timer-card-top">
+          <label class="eyebrow" for="talk-select">{{ isRunning ? t('timer.nowTiming') : t('timer.selectSegment') }}</label>
+        </div>
+
+        <select
+          id="talk-select"
+          class="talk-select"
+          [ngModel]="selectedTalkId"
+          (ngModelChange)="selectTalk($event)"
+          [disabled]="isRunning || !visibleTimers.length"
+        >
+          @for (talk of visibleTimers; track trackTalk($index, talk)) {
+            <option [ngValue]="talk.talkId">{{ talkTitle(talk) }}</option>
+          }
+        </select>
+
+        <div class="timer-face" aria-live="polite">
+          <span class="timer-value">{{ formatTimer(displayedSeconds) }}</span>
+          <span class="timer-caption">
+            {{ isOvertime ? t('timer.overtime') : selectedTalk?.countUp ? t('timer.elapsed') : t('timer.remaining') }}
+          </span>
+        </div>
+
+        <div
+          class="progress-track"
+          role="progressbar"
+          [attr.aria-valuenow]="progressPercent"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          [attr.aria-label]="formatTimer(elapsedSeconds) + ' ' + t('timer.elapsedLabel')"
+        >
+          <div class="progress-fill" [style.width.%]="progressPercent"></div>
+        </div>
+
+        <div class="timer-details">
+          <span>{{ t('timer.planned') }} <strong>{{ formatTimer(actualDurationSeconds) }}</strong></span>
+          <span>{{ selectedTalk ? sectionName(selectedTalk.meetingSectionNameInternal) : t('timer.meetingTimer') }}</span>
+        </div>
+
+        <div class="primary-controls">
+          @if (isRunning) {
+            <button class="stop-button" type="button" (click)="stopTimer()">
+              <span class="control-square"></span> {{ t('timer.stop') }}
+            </button>
+          } @else {
+            <button
+              class="start-button"
+              type="button"
+              (click)="startTimer()"
+              [disabled]="selectedTalkId === null || loading"
+            >
+              <span class="control-play"></span> {{ t('timer.start') }}
+            </button>
+          }
+        </div>
+
+        <div class="quick-controls">
+          <div class="quick-group">
+            <span class="quick-label">{{ t('timer.adjust') }}</span>
+            <button type="button" (click)="adjustDuration(-300)" [disabled]="isRunning || !selectedTalk" [attr.aria-label]="t('timer.subtract5m')">−5m</button>
+            <button type="button" (click)="adjustDuration(-15)" [disabled]="isRunning || !selectedTalk" [attr.aria-label]="t('timer.subtract15s')">−15s</button>
+            <button type="button" (click)="adjustDuration(15)" [disabled]="isRunning || !selectedTalk" [attr.aria-label]="t('timer.add15s')">+15s</button>
+            <button type="button" (click)="adjustDuration(300)" [disabled]="isRunning || !selectedTalk" [attr.aria-label]="t('timer.add5m')">+5m</button>
+          </div>
+          <div class="toggle-controls">
+            @if (settings?.allowCountUpToggle) {
+              <button
+                type="button"
+                class="toggle-button"
+                [class.selected]="selectedTalk?.countUp"
+                [disabled]="isRunning || !selectedTalk"
+                (click)="toggleCountUp()"
+              >
+                {{ selectedTalk?.countUp ? t('timer.countUp') : t('timer.countDown') }}
+              </button>
+            }
+          </div>
+        </div>
+      </article>
+
+      <div class="feature-row">
+        <article class="feature-card">
+          <span class="feature-icon">◷</span>
+          <div>
+            <p class="feature-title">{{ t('feature.timerMode') }}</p>
+            <p class="feature-copy">{{ selectedTalk?.countUp ? t('feature.countsUp') : t('feature.countsDown') }}</p>
+          </div>
+        </article>
+        <button class="feature-card feature-button" type="button" (click)="openReport()">
+          <span class="feature-icon">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+          </span>
+          <div>
+            <p class="feature-title">{{ t('feature.emailReport') }}</p>
+            <p class="feature-copy">{{ t('feature.emailReportCopy') }}</p>
+          </div>
+        </button>
+      </div>
+    </section>
+
+    <aside class="schedule-card">
+      <div class="schedule-heading">
+        <div>
+          <h2>{{ t(activeMeeting === 'weekend' ? 'progress.titleWeekend' : 'progress.titleMidweek') }}</h2>
+          <p class="schedule-times">{{ meetingTimes }}</p>
+        </div>
+        <span class="schedule-count">{{ visibleTimers.length }} {{ visibleTimers.length === 1 ? t('schedule.item') : t('schedule.items') }}</span>
+      </div>
+
+      <ol class="schedule-list">
+        @for (talk of visibleTimers; track trackTalk($index, talk); let index = $index) {
+          <li class="schedule-row">
+            <button
+              class="schedule-item"
+              type="button"
+              [class.current]="selectedTalkId === talk.talkId"
+              [class.completed]="talk.completedTimeSecs !== null"
+              [disabled]="isRunning"
+              (click)="selectTalk(talk.talkId)"
+            >
+              <span class="schedule-index">{{ (index + 1).toString().padStart(2, '0') }}</span>
+              <span class="schedule-content">
+                <span class="schedule-title">{{ talkTitle(talk) }}</span>
+                <span class="schedule-section">{{ sectionName(talk.meetingSectionNameInternal) }}</span>
+              </span>
+              <span class="schedule-duration">
+                {{ formatTimer(talk.actualDurationSecs) }}
+                @if (talk.completedTimeSecs !== null) {
+                  <span class="completion-marker" [attr.aria-label]="t('schedule.completed')">✓</span>
+                }
+              </span>
+            </button>
+            @if (talk.meeting === 'midweek') {
+              <button
+                class="remove-button"
+                type="button"
+                [disabled]="isRunning"
+                [attr.aria-label]="t('schedule.remove')"
+                [title]="t('schedule.remove')"
+                (click)="removeTalk(talk)"
+              >×</button>
+            }
+          </li>
+        }
+      </ol>
+
+      <div class="schedule-footer">
+        <span class="footer-dot"></span>
+        <span>{{ t('schedule.footer') }}</span>
+      </div>
+    </aside>
+  </div>
+  }
+  }
+
+  <footer class="page-footer">
+    <span>{{ t('footer.title') }}</span>
+    <a class="github-link" href="https://github.com/DavidIQ/OnlyTWeb" target="_blank" rel="noopener" [attr.aria-label]="t('footer.github')">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+      <span>{{ t('footer.github') }}</span>
+    </a>
+  </footer>
+  @if (toastVisible) {
+    <div class="toast" role="status">{{ t(toastText) }}</div>
+  }
+</main>
+}
+
+<ng-template #tieIcon>
+  <svg viewBox="0 0 24 24">
+    <circle cx="12" cy="7" r="4"/>
+    <path d="M3 22c0-5 4-8 9-8s9 3 9 8z"/>
+    <path class="tie" d="M12 14.5l1.7 1.6-1 1.4 1.3 4.5h-4l1.3-4.5-1-1.4z"/>
+  </svg>
+</ng-template>
+
+<ng-template #sectionIcon let-key>
+  @switch (key) {
+    @case ('treasures') {
+      <svg viewBox="0 0 24 24"><path d="M7 3h10l5 6-10 12L2 9z"/></svg>
+    }
+    @case ('ministry') {
+      <svg viewBox="0 0 24 24">
+        <path d="M12 22V6" stroke="currentColor" stroke-width="1.6" fill="none"/>
+        <ellipse cx="12" cy="4" rx="1.8" ry="3"/>
+        <ellipse cx="8.3" cy="9" rx="1.8" ry="3.4" transform="rotate(-35 8.3 9)"/>
+        <ellipse cx="15.7" cy="9" rx="1.8" ry="3.4" transform="rotate(35 15.7 9)"/>
+        <ellipse cx="8.3" cy="15" rx="1.8" ry="3.4" transform="rotate(-35 8.3 15)"/>
+        <ellipse cx="15.7" cy="15" rx="1.8" ry="3.4" transform="rotate(35 15.7 15)"/>
+      </svg>
+    }
+    @case ('living') {
+      <svg viewBox="0 0 24 24">
+        <circle cx="9" cy="10" r="4.2"/><circle cx="13.5" cy="9" r="3.8"/><circle cx="12" cy="13" r="4"/>
+        <ellipse cx="19" cy="11.5" rx="2.4" ry="3"/>
+        <rect x="7.5" y="15" width="1.6" height="6"/><rect x="14" y="15" width="1.6" height="6"/>
+      </svg>
+    }
+    @case ('circuitoverseer') {
+      <ng-container *ngTemplateOutlet="tieIcon"></ng-container>
+    }
+    @case ('concludingco') {
+      <ng-container *ngTemplateOutlet="tieIcon"></ng-container>
+    }
+    @case ('public') {
+      <svg viewBox="0 0 24 24"><path d="M4 3h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-8l-6 5v-5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg>
+    }
+    @case ('watchtower') {
+      <svg viewBox="0 0 24 24"><path d="M12 6C10 4.3 6.5 3.5 2 4v14c4.5-.5 8 .3 10 2 2-1.700 5.500-2.500 10-2V4c-4.500-.5-8 .3-10 2zm-1 12.200C8.800 17.300 6.300 17 4 17V6c2.300 0 4.800.7 7 2.200zm2 0V8.200C15.200 6.700 17.700 6 20 6v11c-2.300 0-4.800.3-7 1.200z"/></svg>
+    }
+  }
+</ng-template>
+
+<ng-template #progressList>
+    <ol class="progress-list">
+      @for (row of progressRows; track $index) {
+        <li class="progress-row" [class]="row.theme ? 'progress-row theme-' + row.theme : 'progress-row'" [class.counsel]="row.counsel" [class.pending]="row.state === 'pending'" [class.running]="row.state === 'running'">
+          @if (row.heading; as heading) {
+            <h2 class="progress-section" [class]="'progress-section section-' + heading.key">
+              <span class="section-badge" aria-hidden="true">
+                <ng-container *ngTemplateOutlet="sectionIcon; context: { $implicit: heading.key }"></ng-container>
+              </span>
+              <span>{{ heading.text }}</span>
+            </h2>
+          }
+          @if (activeMeeting === 'weekend' && row.theme) {
+            <div class="progress-title weekend-title">
+              <span class="section-badge" aria-hidden="true">
+                <ng-container *ngTemplateOutlet="sectionIcon; context: { $implicit: row.theme }"></ng-container>
+              </span>
+              <span>{{ row.title }}</span>
+            </div>
+          } @else {
+            <div class="progress-title">{{ row.title }}</div>
+          }
+          <div class="progress-line">
+            <span class="progress-duration">{{ formatTimer(row.duration) }}</span>
+            <span class="progress-times">{{ row.times }}</span>
+            <span class="progress-dots"></span>
+            @if (row.remaining !== null) {
+              <span class="progress-remaining" [class.late]="row.remaining < 0">{{ formatRemaining(row.remaining) }}</span>
+            }
+          </div>
+        </li>
+      }
+    </ol>
+</ng-template>
