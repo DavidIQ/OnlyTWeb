@@ -753,7 +753,7 @@ h2 {
 .setup-card {
   max-width: 920px;
   margin: 28px auto 0;
-  padding: 28px 30px 30px;
+  padding: 28px 30px 10px;
   border: 1px solid var(--border);
   border-radius: 12px;
   background: var(--surface);
@@ -936,7 +936,20 @@ h2 {
   }
 
   .topbar {
-    height: 62px;
+    height: 48px;
+  }
+
+  .setup-card {
+    margin-top: 14px;
+  }
+
+  .progress-page {
+    padding-top: 16px;
+    padding-bottom: 16px;
+  }
+
+  .progress-header {
+    margin-bottom: 12px;
   }
 
   .topbar-meta {
@@ -950,8 +963,8 @@ h2 {
   .page-heading {
     align-items: flex-start;
     flex-direction: column;
-    gap: 14px;
-    padding: 0 0 20px;
+    gap: 10px;
+    padding: 0 0 12px;
   }
 
   .heading-actions {
@@ -1002,7 +1015,7 @@ h2 {
   }
 
   .page-footer {
-    padding-top: 18px;
+    padding: 12px 1px 14px;
     font-size: 9px;
   }
 }
