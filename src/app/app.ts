@@ -669,7 +669,9 @@ export class App implements OnInit, OnDestroy {
         this.selectedTalkId === null ||
         !visible.some((talk) => talk.talkId === this.selectedTalkId)
       ) {
-        this.selectedTalkId = visible[0]?.talkId ?? null;
+        // On load, pick the first part that hasn't been completed yet (or the first part if all are done).
+        const next = visible.find((talk) => talk.completedTimeSecs === null);
+        this.selectedTalkId = (next ?? visible[0])?.talkId ?? null;
       }
 
       this.errorMessage = '';
