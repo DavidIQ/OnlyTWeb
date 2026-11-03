@@ -86,6 +86,8 @@ export const es: Translations = {
   'schedule.weekend': 'Fin de semana',
   'schedule.remove': 'Quitar parte',
   'schedule.confirmRemove': "¿Quitar «{title}» del programa?",
+  'schedule.resetAll': 'Restablecer todo',
+  'schedule.confirmResetAll': '¿Restablecer todos los temporizadores? Se borrarán los tiempos completados y las horas de inicio y fin.',
   'error.invalid_time_range': 'Una reunión debe terminar después de empezar.',
   'error.last_part': 'No se puede quitar la última parte de la reunión de entre semana.',
   'talk.publicTalk': 'Discurso Público',

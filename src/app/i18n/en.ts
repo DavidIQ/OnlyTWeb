@@ -84,6 +84,8 @@ export const en = {
   'schedule.weekend': 'Weekend',
   'schedule.remove': 'Remove part',
   'schedule.confirmRemove': "Remove \"{title}\" from the schedule?",
+  'schedule.resetAll': 'Reset all',
+  'schedule.confirmResetAll': 'Reset all timers? Completed times and start/end times will be cleared.',
   'error.invalid_time_range': 'A meeting must end after it starts.',
   'error.last_part': 'The last midweek part cannot be removed.',
   'talk.publicTalk': 'Public Talk',

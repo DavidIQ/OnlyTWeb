@@ -86,6 +86,8 @@ export const it: Translations = {
   'schedule.weekend': 'Fine settimana',
   'schedule.remove': 'Rimuovi parte',
   'schedule.confirmRemove': "Rimuovere \"{title}\" dal programma?",
+  'schedule.resetAll': 'Reimposta tutto',
+  'schedule.confirmResetAll': 'Reimpostare tutti i timer? I tempi completati e gli orari di inizio e fine verranno cancellati.',
   'error.invalid_time_range': 'Un’adunanza deve finire dopo il suo inizio.',
   'error.last_part': 'Non è possibile rimuovere l’ultima parte dell’adunanza infrasettimanale.',
   'talk.publicTalk': 'Discorso pubblico',

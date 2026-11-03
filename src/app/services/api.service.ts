@@ -136,6 +136,10 @@ export class ApiService {
     return firstValueFrom(this.http.post(`${this.baseUrl}/timers/${talkId}`, {}));
   }
 
+  resetTimers(): Promise<unknown> {
+    return firstValueFrom(this.http.post(`${this.baseUrl}/timers/reset`, {}));
+  }
+
   stopTimer(talkId: number): Promise<unknown> {
     return firstValueFrom(this.http.delete(`${this.baseUrl}/timers/${talkId}`));
   }

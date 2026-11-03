@@ -86,6 +86,8 @@ export const fr: Translations = {
   'schedule.weekend': 'Week-end',
   'schedule.remove': 'Retirer la partie',
   'schedule.confirmRemove': "Retirer « {title} » du programme ?",
+  'schedule.resetAll': 'Tout réinitialiser',
+  'schedule.confirmResetAll': 'Réinitialiser tous les minuteurs ? Les temps terminés et les heures de début et de fin seront effacés.',
   'error.invalid_time_range': 'Une réunion doit se terminer après son début.',
   'error.last_part': 'La dernière partie de la réunion de semaine ne peut pas être retirée.',
   'talk.publicTalk': 'Discours public',

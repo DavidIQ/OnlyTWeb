@@ -841,6 +841,29 @@ h2 {
   white-space: nowrap;
 }
 
+.reset-all-button {
+  align-self: stretch;
+  margin: 12px 0;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.reset-all-button:hover:not(:disabled) {
+  background: var(--danger-bg-strong);
+  color: var(--danger-hover-text);
+}
+
+.reset-all-button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
 .schedule-footer {
   display: flex;
   align-items: center;

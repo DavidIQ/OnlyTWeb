@@ -336,6 +336,28 @@ function handleRequest(): never
         respond($store->transact(static fn(array &$state): array => timersResponse($state)));
     }
 
+    if ($path === '/api/v1/timers/reset') {
+        if ($method !== 'POST') {
+            throw new ApiException(405, 'Method not allowed.');
+        }
+        respond($store->transact(static function (array &$state): array {
+            if ($state['status']['isRunning']) {
+                throw new ApiException(409, 'Timers cannot be reset while a timer is running.', 'timer_running_edit');
+            }
+            foreach ($state['timerInfo'] as &$timer) {
+                $timer['completedTimeSecs'] = null;
+                $timer['startTime'] = null;
+                $timer['endTime'] = null;
+                if ($timer['adaptedDurationSecs'] !== null) {
+                    $timer['adaptedDurationSecs'] = null;
+                    $timer['actualDurationSecs'] = $timer['modifiedDurationSecs'] ?? $timer['originalDurationSecs'];
+                }
+            }
+            unset($timer);
+            return ['success' => true];
+        }));
+    }
+
     if (preg_match('#^/api/v1/timers/(\d+)$#', $path, $matches) === 1) {
         $talkId = (int)$matches[1];
         if ($method === 'GET') {

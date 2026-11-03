@@ -50,6 +50,8 @@ import { MeetingKind, Translated, formatTimer, meetingTitleKey } from './shared'
   }
 </ol>
 
+<button class="reset-all-button" type="button" [disabled]="running()" (click)="resetRequested.emit()">{{ t('schedule.resetAll') }}</button>
+
 <div class="schedule-footer">
   <span class="footer-dot"></span>
   <span>{{ t('schedule.footer') }}</span>
@@ -65,6 +67,7 @@ export class ScheduleCard extends Translated {
   readonly running = input.required<boolean>();
   readonly talkSelected = output<number>();
   readonly talkRemoved = output<TimerInfo>();
+  readonly resetRequested = output<void>();
 
   protected readonly formatTimer = formatTimer;
   protected readonly meetingTitleKey = meetingTitleKey;

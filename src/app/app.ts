@@ -133,6 +133,7 @@ const COUNSEL_ALLOWED_SECONDS = 60;
       [running]="isRunning"
       (talkSelected)="selectTalk($event)"
       (talkRemoved)="removeTalk($event)"
+      (resetRequested)="resetAllTimers()"
     ></aside>
   </div>
   }
@@ -452,6 +453,15 @@ export class App implements OnInit, OnDestroy {
       return;
     }
     await this.runAction(() => this.api.deleteTalk(talk.talkId));
+  }
+
+  async resetAllTimers(): Promise<void> {
+    if (this.isRunning || !window.confirm(this.t('schedule.confirmResetAll'))) {
+      return;
+    }
+    await this.runAction(() => this.api.resetTimers());
+    this.selectedTalkId = this.visibleTimers[0]?.talkId ?? null;
+    this.changeDetector.markForCheck();
   }
 
   private formatClockTime(time: string): string {
