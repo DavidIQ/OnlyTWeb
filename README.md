@@ -1,8 +1,30 @@
 # OnlyT Web
 
-Angular operator console and PHP API port of the core OnlyT meeting-timer workflow. The app provides a selectable schedule, start/stop controls, count-up/count-down mode, per-item duration adjustments, a browser-based secondary display, and persistent timer state.
+OnlyT Web is a browser-based meeting timer with an Angular operator console and a PHP API. It brings the core OnlyT schedule and timing workflow to a browser, with a separate display for a projector or second screen.
 
 Project home: <https://github.com/DavidIQ/OnlyTWeb>
+
+## Features
+
+- PIN-protected operator console, with a first-run setup to preview and import the mid-week schedule.
+- Built-in weekend and mid-week schedules, including Circuit Overseer visit options.
+- Start and stop segment timers, choose count-up or count-down, adjust durations, and track progress; schedule and timer state persist in SQLite.
+- Configure mid-week and weekend meeting times and the weekend day, and choose no, one-way, or two-way adaptive timing.
+- `/display` provides a full-screen clock while idle and a color-coded running timer: green on time, yellow in the final 30 seconds, and red when overtime.
+- `/progress` shows completed, running, and upcoming parts, actual start/end times, and early/late variances.
+- Email an HTML meeting progress report.
+- English, Spanish, Portuguese, French, and Italian UI and schedule translations.
+- Installable as a standalone web app. Offline use is not supported.
+- The operator console, PIN screen, and progress view follow the device's light or dark appearance. The projector display stays black in either theme.
+
+## Screenshots
+
+| Screen | Dark mode | Light mode |
+|---|---|---|
+| PIN entry | ![PIN entry in dark mode](screenshots/pin-dark.png) | ![PIN entry in light mode](screenshots/pin-light.png) |
+| Operator console | ![Operator console in dark mode](screenshots/operator-dark.png) | ![Operator console in light mode](screenshots/operator-light.png) |
+| Running timer display | ![Running timer display in dark mode](screenshots/display-dark.png) | ![Running timer display in light mode](screenshots/display-light.png) |
+| Meeting progress | ![Meeting progress in dark mode](screenshots/progress-dark.png) | ![Meeting progress in light mode](screenshots/progress-light.png) |
 
 ## Requirements
 
@@ -26,7 +48,7 @@ npm start
 
 Open the Angular URL printed by the CLI (normally `http://localhost:4200`). The Angular development server proxies `/api` requests to the local PHP server.
 
-The first API request creates `backend/storage/onlyt.sqlite` and seeds the example schedule. Schedule entries and settings are stored in SQLite and survive server restarts. Back up this database file to preserve local changes.
+The first API request creates `backend/storage/onlyt.sqlite` and seeds the built-in weekend schedule; import the mid-week schedule from the setup screen. Schedule entries and settings are stored in SQLite and survive server restarts. Back up this database file to preserve local changes.
 
 ## API
 
@@ -48,16 +70,16 @@ Error responses include a machine-readable `code` used by the client for transla
 
 ## Operator console PIN
 
-The operator console is protected by a 4-digit PIN set in `backend/config.php` (`'pin' => '1234'` by default — change it before deploying). `POST /api/v1/auth` (`{pin}`) validates it and sets a 12-hour HttpOnly session cookie; `GET /api/v1/auth` reports the state. Every non-GET API call and the schedule preview require the cookie (401 `auth_required` otherwise). Reads of timers and settings stay public so `/display` and `/progress` work without a PIN. Five wrong attempts lock logins for one minute. Changing the PIN signs everyone out.
+The operator console is protected by a 4-digit PIN set in `backend/config.php`; change the configured PIN before deploying. `POST /api/v1/auth` (`{pin}`) validates it and sets a 12-hour HttpOnly session cookie; `GET /api/v1/auth` reports the state. Every non-GET API call and the schedule preview require the cookie (401 `auth_required` otherwise). Reads of timers and settings stay public so `/display` and `/progress` work without a PIN. Five wrong attempts lock logins for one minute. Changing the PIN signs everyone out.
 
 ## Setup and display
 
-- The settings panel ("Congregation meetings settings") has Save and Cancel; both close it, Save shows a "Saved successfully" toast, and the segment and schedule are hidden while it is open. The Circuit Overseer checkbox stays on the main screen.
-- On first run (no mid-week schedule in SQLite) a setup screen is shown before the operator console, with a preview and an Import button.
-- A language picker (English, Spanish, Portuguese, French, Italian) translates all UI text and schedule titles; the choice is stored in the browser.
-- `/display` shows only the browser-formatted clock when idle, and the running timer otherwise: green while OK, yellow in the last minute, red when over time. The clock omits AM/PM. A small link leads to `/progress`.
-- `/progress` ("Meeting Progress") lists every part of the active meeting in order with its length. Finished parts show actual time, start/end times and a green `-mm:ss` (under) or red `+mm:ss` (over) variance, the running part ticks live, and pending parts are grayed. The mid-week meeting has WOL-styled section headings. Start/end times are recorded when a timer is started and stopped. Both `/display` and `/progress` need the web server to serve `index.html` for those paths.
-- Adaptive mode (setting for both meetings, as in the Windows app): when a talk starts, the time the meeting is running ahead or behind (more than 15 s, up to 15 min) is spread over this and the remaining adaptable talks (student talks, Living as Christians, concluding items, Watchtower Study) in proportion to their length. One-way only shortens talks; two-way also lengthens them. The planned timeline is the configured start time plus the cumulative durations and typical changeover gaps, so it is an approximation of the Windows offsets. The server's PHP time zone is used for the clock.
+- The meeting settings panel configures mid-week and weekend times, the weekend day, and adaptive timing. The Circuit Overseer option is also available on the main timer screen.
+- On first run, when no mid-week schedule is stored, the app offers a schedule preview and import step before opening the console.
+- The language picker translates the UI and schedule titles; the selected language is stored in the browser.
+- `/display` shows the browser-formatted clock while idle and the running timer otherwise. The clock omits AM/PM, and a link opens `/progress`.
+- `/progress` ("Meeting Progress") lists all parts in schedule order. Completed parts show actual durations, start/end times, and early/late variance; the running part updates live and upcoming parts are dimmed. Mid-week parts are grouped under section headings. Both routes require the web server to serve `index.html` for those paths.
+- Adaptive timing evaluates schedule offsets when a segment starts. More than 15 seconds ahead or behind (up to 15 minutes) is distributed proportionally across eligible remaining parts; one-way mode shortens parts, while two-way mode may also lengthen them. The configured start time and typical changeover gaps form an approximate planned timeline. The server's PHP time zone is used for the clock.
 - `GET /api/v1/system`, `GET /api/v1/datetime`
 
 The timer API adds an `elapsedSeconds` field while retaining the existing property names.
