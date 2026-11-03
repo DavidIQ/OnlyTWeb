@@ -5,7 +5,18 @@ import { Translated } from './shared';
 @Component({
   selector: 'label[app-language-picker]',
   imports: [FormsModule],
-  templateUrl: './language-picker.html',
+  template: `
+<span class="visually-hidden">{{ t('language.label') }}</span>
+<select
+  [ngModel]="i18n.language"
+  (ngModelChange)="onChange($event)"
+  [attr.aria-label]="t('language.label')"
+>
+  @for (language of i18n.languages; track language.code) {
+    <option [value]="language.code">{{ language.name }}</option>
+  }
+</select>
+`,
   host: { class: 'language-picker' },
 })
 export class LanguagePicker extends Translated {

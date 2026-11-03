@@ -6,7 +6,27 @@ import { Translated } from './shared';
 @Component({
   selector: 'section[app-pin-card]',
   imports: [FormsModule],
-  templateUrl: './pin-card.html',
+  template: `
+<h1>{{ t('pin.title') }}</h1>
+<p class="subheading">{{ t('pin.intro') }}</p>
+<form class="pin-form" (ngSubmit)="submit()">
+  <input
+    class="pin-input"
+    name="pin"
+    type="password"
+    inputmode="numeric"
+    autocomplete="one-time-code"
+    maxlength="4"
+    pattern="[0-9]{4}"
+    [attr.aria-label]="t('pin.label')"
+    [(ngModel)]="pin"
+  />
+  @if (error(); as key) {
+    <p class="setup-error" role="alert">{{ t(key) }}</p>
+  }
+  <button class="start-button" type="submit" [disabled]="pin.length !== 4 || busy()">{{ t('pin.submit') }}</button>
+</form>
+`,
   host: { class: 'setup-card pin-card' },
 })
 export class PinCard extends Translated {

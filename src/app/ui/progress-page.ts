@@ -6,7 +6,17 @@ import { MeetingKind, Translated, meetingTitleKey } from './shared';
 @Component({
   selector: 'main[app-progress-page]',
   imports: [LanguagePicker, ProgressList],
-  templateUrl: './progress-page.html',
+  template: `
+<header class="progress-header">
+  <h1>{{ t(meetingTitleKey(meeting())) }}</h1>
+  <div class="progress-actions">
+    <a href="/display">{{ t('progress.back') }}</a>
+    <label app-language-picker [persist]="false"></label>
+  </div>
+</header>
+
+<ol app-progress-list [rows]="rows()" [meeting]="meeting()"></ol>
+`,
   host: { class: 'progress-page' },
 })
 export class ProgressPage extends Translated {

@@ -24,7 +24,127 @@ const COUNSEL_ALLOWED_SECONDS = 60;
 @Component({
   selector: 'app-root',
   imports: [DisplayView, LanguagePicker, PageFooter, PageHeading, PinCard, ProgressPage, ReportPanel, ScheduleCard, SettingsPanel, SetupCard, TimerColumn],
-  templateUrl: './app.html',
+  template: `
+@if (isDisplayMode) {
+  <main
+    app-display-view
+    [running]="isRunning"
+    [overtime]="isOvertime"
+    [closing]="isClosing"
+    [seconds]="displayedSeconds"
+    [clockText]="clockText"
+  ></main>
+} @else if (isProgressMode) {
+  <main app-progress-page [meeting]="activeMeeting" [rows]="progressRows"></main>
+} @else {
+<main class="shell">
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="OnlyT Web">
+      <img class="brand-mark" src="icon4.png" alt="" />
+      <span>OnlyT <span class="brand-light">Web</span></span>
+    </a>
+    <div class="topbar-meta">
+      @if (status?.isRunning) {
+        <span class="clock">{{ t('top.timerLive') }}</span>
+      }
+      <label app-language-picker></label>
+    </div>
+  </header>
+
+  @if (errorMessage) {
+    <div class="error-banner" role="alert">
+      <span>{{ t(errorMessage) }}</span>
+      <span class="error-actions">
+        <button class="text-button" type="button" (click)="refresh()">{{ t('common.retry') }}</button>
+        <button class="text-button error-dismiss" type="button" [attr.aria-label]="t('common.dismiss')" (click)="errorMessage = ''">×</button>
+      </span>
+    </div>
+  }
+
+  @if (authenticated === false) {
+    <section app-pin-card [error]="pinError" [busy]="pinBusy" (pinSubmitted)="submitPin($event)"></section>
+  } @else if (authenticated === null) {
+    <!-- checking session -->
+  } @else if (showSetup) {
+    <section
+      app-setup-card
+      [circuitVisit]="setupOptions.isCircuitVisit"
+      [items]="previewItems"
+      [previewFailed]="previewFailed"
+      [importing]="importing"
+      (circuitVisitChange)="setupOptions.isCircuitVisit = $event; loadPreview()"
+      (importRequested)="importMidweek()"
+    ></section>
+  } @else if (hasMidweekSchedule) {
+  <section app-page-heading [running]="isRunning" [settingsOpen]="showSettings" (settingsRequested)="openSettings()"></section>
+
+  @if (showSettings && settingsDraft; as draft) {
+    <section
+      app-settings-panel
+      [draft]="draft"
+      [error]="settingsError"
+      [saving]="savingSettings"
+      (cancelled)="cancelSettings()"
+      (saved)="saveSettings()"
+    ></section>
+  } @else if (showReport) {
+    <section
+      app-report-panel
+      [from]="reportFrom"
+      [(recipients)]="reportRecipients"
+      [error]="reportError"
+      [sending]="sendingReport"
+      [meeting]="activeMeeting"
+      [rows]="progressRows"
+      (cancelled)="closeReport()"
+      (sendRequested)="sendReport($event)"
+    ></section>
+  } @else {
+  <div class="dashboard">
+    <section
+      app-timer-column
+      [timers]="visibleTimers"
+      [selectedTalk]="selectedTalk"
+      [selectedTalkId]="selectedTalkId"
+      [settings]="settings"
+      [loading]="loading"
+      [running]="isRunning"
+      [overtime]="isOvertime"
+      [closing]="isClosing"
+      [displayedSeconds]="displayedSeconds"
+      [elapsedSeconds]="elapsedSeconds"
+      [durationSeconds]="actualDurationSeconds"
+      [progressPercent]="progressPercent"
+      (talkSelected)="selectTalk($event)"
+      (circuitVisitChange)="updateSetting({ circuitVisit: $event })"
+      (startRequested)="startTimer()"
+      (stopRequested)="stopTimer()"
+      (adjustRequested)="adjustDuration($event)"
+      (countUpToggled)="toggleCountUp()"
+      (reportRequested)="openReport()"
+    ></section>
+
+    <aside
+      app-schedule-card
+      [meeting]="activeMeeting"
+      [meetingTimes]="meetingTimes"
+      [timers]="visibleTimers"
+      [selectedTalkId]="selectedTalkId"
+      [running]="isRunning"
+      (talkSelected)="selectTalk($event)"
+      (talkRemoved)="removeTalk($event)"
+    ></aside>
+  </div>
+  }
+  }
+
+  <footer app-page-footer></footer>
+  @if (toastVisible) {
+    <div class="toast" role="status">{{ t(toastText) }}</div>
+  }
+</main>
+}
+`,
   styleUrl: './app.css',
   // The stylesheet is shared by the child components in ./ui, so it must not be scoped to this component.
   encapsulation: ViewEncapsulation.None,

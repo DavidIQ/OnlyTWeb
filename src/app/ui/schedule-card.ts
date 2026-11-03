@@ -4,7 +4,57 @@ import { MeetingKind, Translated, formatTimer, meetingTitleKey } from './shared'
 
 @Component({
   selector: 'aside[app-schedule-card]',
-  templateUrl: './schedule-card.html',
+  template: `
+<div class="schedule-heading">
+  <div>
+    <h2>{{ t(meetingTitleKey(meeting())) }}</h2>
+    <p class="schedule-times">{{ meetingTimes() }}</p>
+  </div>
+  <span class="schedule-count">{{ timers().length }} {{ timers().length === 1 ? t('schedule.item') : t('schedule.items') }}</span>
+</div>
+
+<ol class="schedule-list">
+  @for (talk of timers(); track trackTalk($index, talk); let index = $index) {
+    <li class="schedule-row">
+      <button
+        class="schedule-item"
+        type="button"
+        [class.current]="selectedTalkId() === talk.talkId"
+        [class.completed]="talk.completedTimeSecs !== null"
+        [disabled]="running()"
+        (click)="talkSelected.emit(talk.talkId)"
+      >
+        <span class="schedule-index">{{ (index + 1).toString().padStart(2, '0') }}</span>
+        <span class="schedule-content">
+          <span class="schedule-title">{{ i18n.talkTitle(talk) }}</span>
+          <span class="schedule-section">{{ i18n.sectionName(talk.meetingSectionNameInternal) }}</span>
+        </span>
+        <span class="schedule-duration">
+          {{ formatTimer(talk.actualDurationSecs) }}
+          @if (talk.completedTimeSecs !== null) {
+            <span class="completion-marker" [attr.aria-label]="t('schedule.completed')">✓</span>
+          }
+        </span>
+      </button>
+      @if (talk.meeting === 'midweek') {
+        <button
+          class="remove-button"
+          type="button"
+          [disabled]="running()"
+          [attr.aria-label]="t('schedule.remove')"
+          [title]="t('schedule.remove')"
+          (click)="talkRemoved.emit(talk)"
+        >×</button>
+      }
+    </li>
+  }
+</ol>
+
+<div class="schedule-footer">
+  <span class="footer-dot"></span>
+  <span>{{ t('schedule.footer') }}</span>
+</div>
+`,
   host: { class: 'schedule-card' },
 })
 export class ScheduleCard extends Translated {

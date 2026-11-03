@@ -7,7 +7,29 @@ import { MeetingKind, Translated, meetingTitleKey } from './shared';
 @Component({
   selector: 'section[app-report-panel]',
   imports: [FormsModule, ProgressList],
-  templateUrl: './report-panel.html',
+  template: `
+<h2>{{ t('report.title') }}</h2>
+<div class="report-from">
+  <span class="report-label">{{ t('report.from') }}</span>
+  <span class="report-from-address">{{ from() }}</span>
+</div>
+<label class="setup-field">
+  <span>{{ t('report.recipients') }}</span>
+  <input type="text" name="recipients" autocomplete="email" [ngModel]="recipients()" (ngModelChange)="recipients.set($event)" [attr.aria-invalid]="!!error()" />
+  <span class="field-hint">{{ t('report.hint') }}</span>
+</label>
+<div class="progress-page report-preview" #reportPreview>
+  <h1>{{ t(meetingTitleKey(meeting())) }}</h1>
+  <ol app-progress-list [rows]="rows()" [meeting]="meeting()"></ol>
+</div>
+<div class="settings-actions">
+  @if (error(); as key) {
+    <p class="setup-error settings-error" role="alert">{{ t(key) }}</p>
+  }
+  <button class="text-button" type="button" (click)="cancelled.emit()">{{ t('common.cancel') }}</button>
+  <button class="start-button" type="button" (click)="sendRequested.emit(reportPreview)" [disabled]="sending()">{{ sending() ? t('report.sending') : t('report.send') }}</button>
+</div>
+`,
   host: { class: 'settings-card report-card' },
 })
 export class ReportPanel extends Translated {

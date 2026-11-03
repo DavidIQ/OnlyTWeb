@@ -3,7 +3,12 @@ import { Translated, formatTimer } from './shared';
 
 @Component({
   selector: 'main[app-display-view]',
-  templateUrl: './display-view.html',
+  template: `
+<div class="display-time" aria-live="off">
+  {{ running() ? formatTimer(seconds()) : clockText() }}
+</div>
+<a class="display-progress-link" href="/progress">{{ t('progress.link') }}</a>
+`,
   host: {
     class: 'display-mode',
     '[class.running]': 'running()',
