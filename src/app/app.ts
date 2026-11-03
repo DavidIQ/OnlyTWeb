@@ -388,7 +388,14 @@ export class App implements OnInit, OnDestroy {
     this.sendingReport = true;
     this.reportError = '';
     try {
-      const report = await buildReportEmail(preview);
+      // The email is always light, so render it with the light palette even when the console is dark.
+      preview.classList.add('force-light');
+      let report;
+      try {
+        report = await buildReportEmail(preview);
+      } finally {
+        preview.classList.remove('force-light');
+      }
       const title = this.i18n.t(meetingTitleKey(this.activeMeeting));
       await this.api.sendReport({ recipients, subject: title, html: report.html, images: report.images });
       this.showReport = false;

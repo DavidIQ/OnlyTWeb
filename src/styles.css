@@ -1,8 +1,117 @@
-:root {
+/* Light tokens. `.force-light` is applied while the report email is built so it stays light in dark mode. */
+:root,
+.force-light {
+  --bg: #f4f6f9;
+  --bg-glow: rgba(221, 231, 245, 0.6);
+  --text-body: #192638;
+  --surface: #fff;
+  --surface-hover: #f7f9fc;
+  --surface-accent: #f3f7ff;
+  --surface-muted: #f2f4f7;
+  --track: #e8edf4;
+  --accent-soft: #edf3ff;
+  --accent-soft-strong: #e0eaff;
+  --border: #e6eaf0;
+  --border-strong: #d9e0ea;
+  --border-accent: #d8e4f8;
+  --text-strong: #1a293d;
+  --text: #34445a;
+  --text-muted: #68768a;
+  --text-link: #536b8e;
+  --text-faint: #8a96a7;
+  --accent: #1d5bd6;
+  --accent-alt: #3069d2;
+  --danger-text: #8b2727;
+  --danger-hover-text: #c62828;
+  --danger-bg: #fff1f1;
+  --danger-bg-strong: #fdecec;
+  --danger-border: #f4c8c8;
+  --danger-border-strong: #eab9b5;
+  --error-text: #b3392a;
+  --success: #16835d;
+  --success-soft: #e3f7ef;
+  --pp-bg: #fff;
+  --pp-text: #000;
+  --pp-dots: #d3d3d3;
+  --pp-rule: #c8c8c8;
+  --pp-muted: #808080;
+  --pp-ok: #008000;
+  --pp-late: #d00000;
+  --pp-badge: #555;
+  --pp-treasures: #2a6b77;
+  --pp-treasures-badge: #3c7f8b;
+  --pp-ministry: #9b6d17;
+  --pp-ministry-badge: #d68f00;
+  --pp-living: #a71d01;
+  --pp-living-badge: #bf2f13;
+  --pp-circuit: #444;
+  --pp-circuit-badge: #5b6b8c;
+  --pp-public: #1b2a5c;
+  --pp-public-badge: #1b2a5c;
+  --pp-watchtower: #3a3a3a;
+  --pp-watchtower-badge: #4a4a4a;
+  --pp-concluding: #1e5a2e;
+}
+
+.force-light {
   color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0d141f;
+    --bg-glow: rgba(40, 60, 100, 0.35);
+    --text-body: #dde4ee;
+    --surface: #161f2d;
+    --surface-hover: #1c2738;
+    --surface-accent: #1a2a47;
+    --surface-muted: #212c3e;
+    --track: #2a3649;
+    --accent-soft: #1c2d4d;
+    --accent-soft-strong: #24396a;
+    --border: #263244;
+    --border-strong: #364559;
+    --border-accent: #2e4a7a;
+    --text-strong: #eef2f8;
+    --text: #cfd7e3;
+    --text-muted: #9aa7ba;
+    --text-link: #8fb0e6;
+    --text-faint: #7f8ca0;
+    --accent: #6b9bf2;
+    --accent-alt: #7aa4f3;
+    --danger-text: #f19a9a;
+    --danger-hover-text: #ff8a8a;
+    --danger-bg: #3b1f24;
+    --danger-bg-strong: #4a262b;
+    --danger-border: #6a3338;
+    --danger-border-strong: #7a3a36;
+    --error-text: #ff8f80;
+    --success: #3fcf9c;
+    --success-soft: #17382e;
+    --pp-bg: #0d141f;
+    --pp-text: #e6eaf0;
+    --pp-dots: #3a4556;
+    --pp-rule: #3a4556;
+    --pp-muted: #8a94a3;
+    --pp-ok: #4cc77a;
+    --pp-late: #ff6b6b;
+    --pp-treasures: #6cc0cf;
+    --pp-ministry: #e0a93e;
+    --pp-living: #ff7f68;
+    --pp-circuit: #b8c0cc;
+    --pp-public: #8fa6ff;
+    --pp-public-badge: #3b53a8;
+    --pp-watchtower: #c4c4c4;
+    --pp-watchtower-badge: #6a6a6a;
+    --pp-concluding: #62c27d;
+  }
+}
+
+:root {
+  color-scheme: light dark;
   font-family: 'DM Sans', 'Segoe UI', sans-serif;
-  color: #192638;
-  background: #f4f6f9;
+  color: var(--text-body);
+  background: var(--bg);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -20,8 +129,8 @@ body {
   min-height: 100vh;
   margin: 0;
   background:
-    radial-gradient(ellipse at 82% 0%, rgba(221, 231, 245, 0.6), transparent 38rem),
-    #f4f6f9;
+    radial-gradient(ellipse at 82% 0%,     var(--bg-glow), transparent 38rem),
+        var(--bg);
 }
 
 button,
