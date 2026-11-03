@@ -6,6 +6,7 @@ import { I18nService } from './services/i18n.service';
 import { buildReportEmail } from './utils/report-html';
 import { DisplayView } from './ui/display-view';
 import { LanguagePicker } from './ui/language-picker';
+import { InstallBanner } from './ui/install-banner';
 import { PageFooter } from './ui/page-footer';
 import { PageHeading } from './ui/page-heading';
 import { PinCard } from './ui/pin-card';
@@ -23,7 +24,7 @@ const COUNSEL_ALLOWED_SECONDS = 60;
 
 @Component({
   selector: 'app-root',
-  imports: [DisplayView, LanguagePicker, PageFooter, PageHeading, PinCard, ProgressPage, ReportPanel, ScheduleCard, SettingsPanel, SetupCard, TimerColumn],
+  imports: [DisplayView, InstallBanner, LanguagePicker, PageFooter, PageHeading, PinCard, ProgressPage, ReportPanel, ScheduleCard, SettingsPanel, SetupCard, TimerColumn],
   template: `
 @if (isDisplayMode) {
   <main
@@ -145,6 +146,7 @@ const COUNSEL_ALLOWED_SECONDS = 60;
   @if (toastVisible) {
     <div class="toast" role="status">{{ t(toastText) }}</div>
   }
+  <app-install-banner></app-install-banner>
 </main>
 }
 `,
