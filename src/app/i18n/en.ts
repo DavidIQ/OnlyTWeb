@@ -25,6 +25,7 @@ export const en = {
   'pin.intro': 'Enter the 4-digit PIN to open the console.',
   'pin.label': 'PIN',
   'pin.submit': 'Enter',
+  'pin.openTimer': 'Open Timer ↗',
   'error.invalid_pin': 'Incorrect PIN.',
   'error.pin_locked': 'Too many attempts. Try again in a minute.',
   'error.auth_required': 'Please enter the PIN.',

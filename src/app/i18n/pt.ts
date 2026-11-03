@@ -27,6 +27,7 @@ export const pt: Translations = {
   'pin.intro': 'Digite o PIN de 4 dígitos para abrir o console.',
   'pin.label': 'PIN',
   'pin.submit': 'Entrar',
+  'pin.openTimer': 'Abrir cronômetro ↗',
   'error.invalid_pin': 'PIN incorreto.',
   'error.pin_locked': 'Muitas tentativas. Tente novamente em um minuto.',
   'error.auth_required': 'Digite o PIN.',

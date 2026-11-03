@@ -621,10 +621,25 @@ h2 {
   text-align: center;
 }
 
+.pin-card .subheading {
+  margin-bottom: 5px;
+}
+
 .pin-form {
   display: grid;
   gap: 14px;
   justify-items: center;
+}
+
+.pin-timer-link {
+  justify-self: end;
+  color: var(--text-muted);
+  font-size: 12px;
+  text-decoration: none;
+}
+
+.pin-timer-link:hover {
+  text-decoration: underline;
 }
 
 .pin-input {

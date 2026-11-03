@@ -27,6 +27,7 @@ export const es: Translations = {
   'pin.intro': 'Introduzca el PIN de 4 dígitos para abrir la consola.',
   'pin.label': 'PIN',
   'pin.submit': 'Entrar',
+  'pin.openTimer': 'Abrir temporizador ↗',
   'error.invalid_pin': 'PIN incorrecto.',
   'error.pin_locked': 'Demasiados intentos. Inténtelo de nuevo en un minuto.',
   'error.auth_required': 'Introduzca el PIN.',

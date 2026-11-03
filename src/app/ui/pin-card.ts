@@ -25,6 +25,7 @@ import { Translated } from './shared';
     <p class="setup-error" role="alert">{{ t(key) }}</p>
   }
   <button class="start-button" type="submit" [disabled]="pin.length !== 4 || busy()">{{ t('pin.submit') }}</button>
+  <a class="pin-timer-link" href="display" target="_blank" rel="noreferrer">{{ t('pin.openTimer') }}</a>
 </form>
 `,
   host: { class: 'setup-card pin-card' },
