@@ -83,7 +83,8 @@ export interface SchedulePreviewItem {
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
-  private readonly baseUrl = '/api/v1';
+  // Relative to <base href>, so the API is found wherever the app is hosted.
+  private readonly baseUrl = 'api/v1';
 
   constructor(private readonly http: HttpClient) {}
 

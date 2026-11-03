@@ -10,7 +10,7 @@ import { MeetingKind, Translated, meetingTitleKey } from './shared';
 <header class="progress-header">
   <h1>{{ t(meetingTitleKey(meeting())) }}</h1>
   <div class="progress-actions">
-    <a href="/display">{{ t('progress.back') }}</a>
+    <a href="display">{{ t('progress.back') }}</a>
     <label app-language-picker [persist]="false"></label>
   </div>
 </header>

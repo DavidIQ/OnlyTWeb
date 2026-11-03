@@ -7,7 +7,7 @@ import { Translated, formatTimer } from './shared';
 <div class="display-time" aria-live="off">
   {{ running() ? formatTimer(seconds()) : clockText() }}
 </div>
-<a class="display-progress-link" href="/progress">{{ t('progress.link') }}</a>
+<a class="display-progress-link" href="progress">{{ t('progress.link') }}</a>
 `,
   host: {
     class: 'display-mode',

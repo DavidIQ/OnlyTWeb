@@ -39,7 +39,7 @@ const COUNSEL_ALLOWED_SECONDS = 60;
 } @else {
 <main class="shell">
   <header class="topbar">
-    <a class="brand" href="/" aria-label="OnlyT Web">
+    <a class="brand" href="./" aria-label="OnlyT Web">
       <img class="brand-mark" src="icon4.png" alt="" />
       <span>OnlyT <span class="brand-light">Web</span></span>
     </a>
@@ -154,8 +154,8 @@ export class App implements OnInit, OnDestroy {
   status: TimerStatus | null = null;
   settings: SettingsData | null = null;
   selectedTalkId: number | null = null;
-  readonly isDisplayMode = window.location.pathname === '/display';
-  readonly isProgressMode = window.location.pathname === '/progress';
+  readonly isDisplayMode = this.routeName() === 'display';
+  readonly isProgressMode = this.routeName() === 'progress';
   currentTime = new Date();
   errorMessage: TranslationKey | '' = '';
   loading = true;
@@ -193,6 +193,12 @@ export class App implements OnInit, OnDestroy {
     private readonly changeDetector: ChangeDetectorRef,
     readonly i18n: I18nService,
   ) {}
+
+  // The page name relative to <base href>, so the app works from the domain root or from a folder such as /onlyt/.
+  private routeName(): string {
+    const base = new URL(document.baseURI).pathname;
+    return window.location.pathname.startsWith(base) ? window.location.pathname.slice(base.length).replace(/\/+$/, '') : '';
+  }
 
   ngOnInit(): void {
     window.addEventListener('storage', this.storageListener);

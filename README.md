@@ -141,19 +141,35 @@ The client is static files and the API is PHP, so any Linux host with a web serv
    </VirtualHost>
    ```
 
-   Apache with `.htaccess` only (shared hosting, where you can't edit the virtual host or use `Alias`). Keep `backend/` outside the web root as in step 3, with the web root being `web/` (often `public_html`). The API reads its routes from the request URL, so the site must be served from the domain root (not a sub-folder), and the host must have `mod_rewrite` and `AllowOverride` enabled for `.htaccess`.
+   Apache with `.htaccess` only (shared hosting, where you can't edit the virtual host or use `Alias`). Everything lives in one folder inside the web root, here `public_html/onlyt/`, served at `https://example.org/onlyt/`. This needs `mod_rewrite` and `AllowOverride` enabled for `.htaccess`. Use this layout instead of the one in step 3:
 
-   1. Create `web/api.php`, a small entry point that loads the real one (adjust the path if your `backend` folder is elsewhere):
+   ```text
+   public_html/onlyt/
+     index.html, main-*.js, ...   <- contents of dist/onlyt-web/browser
+     .htaccess                    <- rules below
+     api.php                      <- entry point below
+     backend/                     <- the backend folder (public/, src/, storage/, config.php)
+       .htaccess                  <- blocks direct access
+   ```
+
+   1. Build with the folder as the base path (use your own folder name):
+
+      ```powershell
+      npm run build -- --base-href /onlyt/
+      ```
+
+   2. Create `onlyt/api.php`, a small entry point that loads the real one:
 
       ```php
       <?php
-      require __DIR__ . '/../backend/public/index.php';
+      require __DIR__ . '/backend/public/index.php';
       ```
 
-   2. Create `web/.htaccess`:
+   3. Create `onlyt/.htaccess` (change `/onlyt/` if you use another folder name):
 
       ```apache
       RewriteEngine On
+      RewriteBase /onlyt/
 
       # Force HTTPS (the PIN is sent to the server)
       RewriteCond %{HTTPS} off
@@ -162,21 +178,22 @@ The client is static files and the API is PHP, so any Linux host with a web serv
       # Send the API to the PHP entry point
       RewriteRule ^api(/.*)?$ api.php [L]
 
-      # Serve real files as-is, and fall back to index.html so /display and /progress work when opened directly
+      # Serve real files as-is, and fall back to index.html so /onlyt/display and /onlyt/progress work when opened directly
       RewriteCond %{REQUEST_FILENAME} !-f
       RewriteCond %{REQUEST_FILENAME} !-d
-      RewriteRule ^ /index.html [L]
+      RewriteRule ^ index.html [L]
       ```
 
-   3. If you can't put `backend/` outside the web root, place it inside (for example `web/backend/`, with `require __DIR__ . '/backend/public/index.php';` in `api.php`) and block direct access with `web/backend/.htaccess`:
+   4. Create `onlyt/backend/.htaccess` so the PIN and the database can't be downloaded:
 
       ```apache
       Require all denied
       ```
 
-      Check that `https://onlyt.example.org/backend/config.php` and `https://onlyt.example.org/backend/storage/onlyt.sqlite` return 403, because they contain the PIN and your data.
+      Check that `https://example.org/onlyt/backend/config.php` and `https://example.org/onlyt/backend/storage/onlyt.sqlite` return 403.
 
-6. **Check it.** Open `https://onlyt.example.org/api/` (it should return `{"lowVersion":1,"highVersion":4}`), then the site root, which asks for the PIN. Open `/display` on the projector or second screen.
+   The app and API use paths relative to the folder, so the same build works under any folder name as long as it is built with the matching `--base-href`.
+6. **Check it.** Open `https://onlyt.example.org/api/` (it should return `{"lowVersion":1,"highVersion":4}`), then the site root, which asks for the PIN. Open `/display` on the projector or second screen. (In the `.htaccess` setup these are `https://example.org/onlyt/api/`, `/onlyt/` and `/onlyt/display`.)
 
 **Updating.** Rebuild, then replace the contents of `web/` and the `backend/public` and `backend/src` folders. Don't overwrite `backend/storage` (your schedule, settings and timings) or `backend/config.php` (your PIN). Database changes are applied automatically on the next request. To back up, copy `backend/storage/onlyt.sqlite`.
 

@@ -122,6 +122,8 @@ function handleRequest(): never
     if (!is_string($path)) {
         throw new ApiException(400, 'Invalid request path.');
     }
+    // Drop any folder the app is hosted in (for example /onlyt/api/v1/... becomes /api/v1/...).
+    $path = preg_replace('#^.*?(?=/api(?:/|$))#', '', $path) ?? $path;
     $path = rtrim($path, '/') ?: '/';
 
     if ($method === 'OPTIONS') {
