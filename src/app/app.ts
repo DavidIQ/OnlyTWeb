@@ -1,33 +1,33 @@
-import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
 import { ApiService, MeetingSettingsChanges, MidweekOptions, SchedulePreviewItem, SettingsData, TimerInfo, TimerStatus } from './api.service';
 import { TranslationKey } from './i18n';
 import { I18nService } from './i18n.service';
 import { buildReportEmail } from './report-html';
+import { DisplayView } from './ui/display-view';
+import { LanguagePicker } from './ui/language-picker';
+import { PageFooter } from './ui/page-footer';
+import { PageHeading } from './ui/page-heading';
+import { PinCard } from './ui/pin-card';
+import { ProgressRow } from './ui/progress-list';
+import { ProgressPage } from './ui/progress-page';
+import { ReportPanel } from './ui/report-panel';
+import { ScheduleCard } from './ui/schedule-card';
+import { SettingsPanel } from './ui/settings-panel';
+import { SetupCard } from './ui/setup-card';
+import { MeetingKind, meetingTitleKey } from './ui/shared';
+import { TimerColumn } from './ui/timer-column';
 
 const LAST_MINUTE_SECONDS = 60;
 const COUNSEL_ALLOWED_SECONDS = 60;
 
-type MeetingKind = 'midweek' | 'weekend';
-
-interface ProgressRow {
-  counsel: boolean;
-  heading: { key: string; text: string } | null;
-  theme: string;
-  state: 'done' | 'running' | 'pending';
-  title: string;
-  duration: number;
-  times: string;
-  remaining: number | null;
-}
-
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, FormsModule],
+  imports: [DisplayView, LanguagePicker, PageFooter, PageHeading, PinCard, ProgressPage, ReportPanel, ScheduleCard, SettingsPanel, SetupCard, TimerColumn],
   templateUrl: './app.html',
   styleUrl: './app.css',
+  // The stylesheet is shared by the child components in ./ui, so it must not be scoped to this component.
+  encapsulation: ViewEncapsulation.None,
 })
 export class App implements OnInit, OnDestroy {
   timerInfo: TimerInfo[] = [];
@@ -55,7 +55,6 @@ export class App implements OnInit, OnDestroy {
   reportError: TranslationKey | '' = '';
   sendingReport = false;
   authenticated: boolean | null = null;
-  pinValue = '';
   pinError: TranslationKey | '' = '';
   pinBusy = false;
   savingSettings = false;
@@ -106,26 +105,10 @@ export class App implements OnInit, OnDestroy {
     return this.i18n.t(key, params);
   }
 
-  onLanguageChange(code: string): void {
-    // On the progress page the choice only lasts for this visit.
-    this.i18n.setLanguage(code, !this.isProgressMode);
-    this.changeDetector.markForCheck();
-  }
-
-  talkTitle(talk: { talkKey: string; talkTitle: string }): string {
-    const key = `talk.${talk.talkKey}`;
-    return this.i18n.has(key) ? this.t(key) : talk.talkTitle;
-  }
-
-  sectionName(sectionInternal: string): string {
-    const key = `section.${sectionInternal.toLowerCase()}`;
-    return this.i18n.has(key) ? this.t(key) : sectionInternal;
-  }
-
   // The progress page uses the full workbook headings rather than the short section labels.
   private progressSectionName(sectionInternal: string): string {
     const key = `progress.section.${sectionInternal.toLowerCase()}`;
-    return this.i18n.has(key) ? this.t(key) : this.sectionName(sectionInternal);
+    return this.i18n.has(key) ? this.t(key) : this.i18n.sectionName(sectionInternal);
   }
 
   // Mid-week parts take their section's colour; each weekend part has its own colour and glyph.
@@ -181,15 +164,6 @@ export class App implements OnInit, OnDestroy {
     return `${this.formatClockTime(start)} – ${this.formatClockTime(end)}`;
   }
 
-  get weekdayOptions(): { value: number; name: string }[] {
-    const formatter = new Intl.DateTimeFormat(this.i18n.language, { weekday: 'long' });
-    // 2024-01-07 was a Sunday, matching Date.getDay() numbering.
-    return Array.from({ length: 7 }, (_, value) => ({
-      value,
-      name: formatter.format(new Date(2024, 0, 7 + value)),
-    }));
-  }
-
   async checkAuth(): Promise<void> {
     try {
       this.authenticated = (await this.api.getAuth()).authenticated;
@@ -202,20 +176,18 @@ export class App implements OnInit, OnDestroy {
     this.changeDetector.markForCheck();
   }
 
-  async submitPin(): Promise<void> {
-    if (this.pinValue.length !== 4 || this.pinBusy) {
+  async submitPin(pin: string): Promise<void> {
+    if (pin.length !== 4 || this.pinBusy) {
       return;
     }
     this.pinBusy = true;
     this.pinError = '';
     try {
-      await this.api.login(this.pinValue);
+      await this.api.login(pin);
       this.authenticated = true;
-      this.pinValue = '';
       void this.loadPreview();
     } catch (error) {
       this.pinError = error instanceof HttpErrorResponse && error.status === 429 ? 'error.pin_locked' : 'error.invalid_pin';
-      this.pinValue = '';
     } finally {
       this.pinBusy = false;
       this.changeDetector.markForCheck();
@@ -297,7 +269,7 @@ export class App implements OnInit, OnDestroy {
     this.reportError = '';
     try {
       const report = await buildReportEmail(preview);
-      const title = this.i18n.t(this.activeMeeting === 'weekend' ? 'progress.titleWeekend' : 'progress.titleMidweek');
+      const title = this.i18n.t(meetingTitleKey(this.activeMeeting));
       await this.api.sendReport({ recipients, subject: title, html: report.html, images: report.images });
       this.showReport = false;
       this.showToast('report.sent');
@@ -342,7 +314,7 @@ export class App implements OnInit, OnDestroy {
     if (this.isRunning) {
       return;
     }
-    if (!window.confirm(this.t('schedule.confirmRemove', { title: this.talkTitle(talk) }))) {
+    if (!window.confirm(this.t('schedule.confirmRemove', { title: this.i18n.talkTitle(talk) }))) {
       return;
     }
     await this.runAction(() => this.api.deleteTalk(talk.talkId));
@@ -362,7 +334,7 @@ export class App implements OnInit, OnDestroy {
     const hasRun = (item: TimerInfo): boolean => item.startTime !== null && item.endTime !== null && item.endTime - item.startTime > 20;
     const rows: ProgressRow[] = [];
     items.forEach((item, index) => {
-      const title = this.talkTitle(item);
+      const title = this.i18n.talkTitle(item);
       // Only the mid-week meeting is split into sections; the weekend has a single run of parts.
       const heading =
         item.meeting === 'midweek' && item.meetingSectionNameInternal !== items[index - 1]?.meetingSectionNameInternal
@@ -417,12 +389,6 @@ export class App implements OnInit, OnDestroy {
     return rows;
   }
 
-  formatRemaining(remaining: number): string {
-    const prefix = remaining === 0 ? '' : remaining > 0 ? '- ' : '+ ';
-    const absolute = Math.abs(remaining);
-    return `${prefix}${String(Math.floor(absolute / 60) % 60).padStart(2, '0')}:${String(absolute % 60).padStart(2, '0')}`;
-  }
-
   private normaliseCounsel(gapSeconds: number): number {
     let counsel = Math.max(0, gapSeconds);
     const reduced = counsel - 20;
@@ -444,10 +410,6 @@ export class App implements OnInit, OnDestroy {
       .map((part) => part.value)
       .join('')
       .trim();
-  }
-
-  get previewTotalSeconds(): number {
-    return this.previewItems.reduce((total, item) => total + item.originalDurationSecs, 0);
   }
 
   async loadPreview(): Promise<void> {
@@ -599,17 +561,6 @@ export class App implements OnInit, OnDestroy {
       return;
     }
     await this.updateTalk({ countUp: !this.selectedTalk.countUp });
-  }
-
-  formatTimer(seconds: number): string {
-    const absoluteSeconds = Math.abs(Math.trunc(seconds));
-    const minutes = Math.floor(absoluteSeconds / 60);
-    const remainingSeconds = absoluteSeconds % 60;
-    return `${seconds < 0 ? '-' : ''}${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
-  }
-
-  trackTalk(_index: number, talk: TimerInfo): number {
-    return talk.talkId;
   }
 
   private async updateTalk(changes: {

@@ -1,0 +1,4 @@
+<div class="display-time" aria-live="off">
+  {{ running() ? formatTimer(seconds()) : clockText() }}
+</div>
+<a class="display-progress-link" href="/progress">{{ t('progress.link') }}</a>

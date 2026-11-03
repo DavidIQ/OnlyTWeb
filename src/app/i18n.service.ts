@@ -51,6 +51,16 @@ export class I18nService {
     return key in TRANSLATIONS.en;
   }
 
+  talkTitle(talk: { talkKey: string; talkTitle: string }): string {
+    const key = `talk.${talk.talkKey}`;
+    return this.has(key) ? this.t(key) : talk.talkTitle;
+  }
+
+  sectionName(sectionInternal: string): string {
+    const key = `section.${sectionInternal.toLowerCase()}`;
+    return this.has(key) ? this.t(key) : sectionInternal;
+  }
+
   private persist(code: string): void {
     try {
       localStorage.setItem(STORAGE_KEY, code);

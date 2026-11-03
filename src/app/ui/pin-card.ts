@@ -1,0 +1,26 @@
+import { Component, input, output } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { TranslationKey } from '../i18n';
+import { Translated } from './shared';
+
+@Component({
+  selector: 'section[app-pin-card]',
+  imports: [FormsModule],
+  templateUrl: './pin-card.html',
+  host: { class: 'setup-card pin-card' },
+})
+export class PinCard extends Translated {
+  readonly error = input<TranslationKey | ''>('');
+  readonly busy = input(false);
+  readonly pinSubmitted = output<string>();
+
+  protected pin = '';
+
+  protected submit(): void {
+    if (this.pin.length !== 4 || this.busy()) {
+      return;
+    }
+    this.pinSubmitted.emit(this.pin);
+    this.pin = '';
+  }
+}
