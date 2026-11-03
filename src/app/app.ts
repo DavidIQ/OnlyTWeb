@@ -370,6 +370,7 @@ export class App implements OnInit, OnDestroy {
   closeReport(): void {
     this.showReport = false;
     this.reportError = '';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   async sendReport(preview: HTMLElement): Promise<void> {
@@ -399,6 +400,7 @@ export class App implements OnInit, OnDestroy {
       const title = this.i18n.t(meetingTitleKey(this.activeMeeting));
       await this.api.sendReport({ recipients, subject: title, html: report.html, images: report.images });
       this.showReport = false;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       this.showToast('report.sent');
     } catch (error) {
       this.reportError = this.errorText(error);
