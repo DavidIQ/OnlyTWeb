@@ -168,6 +168,7 @@ export async function buildReportEmail(source: HTMLElement): Promise<BuiltReport
     if (from.matches('.progress-list')) {
       // The centred list leaves a wide left margin on screen; in the email it should sit flush left.
       to.style.margin = '0';
+      to.style.padding = '0';
       to.style.maxWidth = 'none';
     }
     if (from.matches('.progress-remaining')) {
