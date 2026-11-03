@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
 import { ApiService, MeetingSettingsChanges, MidweekOptions, SchedulePreviewItem, SettingsData, TimerInfo, TimerStatus } from './api.service';
-import { TranslationKey } from './i18n';
+import { TranslationKey } from './i18n/i18n';
 import { I18nService } from './i18n.service';
 import { buildReportEmail } from './report-html';
 import { DisplayView } from './ui/display-view';

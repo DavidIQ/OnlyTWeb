@@ -1,6 +1,6 @@
 import { Component, input, model, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TranslationKey } from '../i18n';
+import { TranslationKey } from '../i18n/i18n';
 import { ProgressList, ProgressRow } from './progress-list';
 import { MeetingKind, Translated, meetingTitleKey } from './shared';
 
