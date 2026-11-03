@@ -194,10 +194,9 @@ export class App implements OnInit, OnDestroy {
     readonly i18n: I18nService,
   ) {}
 
-  // The page name relative to <base href>, so the app works from the domain root or from a folder such as /onlyt/.
+  // The page name is the last URL segment, so it works from the domain root or from a folder such as /onlyt/.
   private routeName(): string {
-    const base = new URL(document.baseURI).pathname;
-    return window.location.pathname.startsWith(base) ? window.location.pathname.slice(base.length).replace(/\/+$/, '') : '';
+    return window.location.pathname.replace(/\/+$/, '').split('/').pop() ?? '';
   }
 
   ngOnInit(): void {
