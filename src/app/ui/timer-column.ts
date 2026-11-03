@@ -1,6 +1,6 @@
 import { Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { SettingsData, TimerInfo } from '../api.service';
+import { SettingsData, TimerInfo } from '../services/api.service';
 import { Translated, formatTimer } from './shared';
 
 @Component({

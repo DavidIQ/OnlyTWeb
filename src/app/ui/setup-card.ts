@@ -1,6 +1,6 @@
 import { Component, computed, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { SchedulePreviewItem } from '../api.service';
+import { SchedulePreviewItem } from '../services/api.service';
 import { Translated } from './shared';
 
 @Component({

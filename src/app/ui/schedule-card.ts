@@ -1,5 +1,5 @@
 import { Component, input, output } from '@angular/core';
-import { TimerInfo } from '../api.service';
+import { TimerInfo } from '../services/api.service';
 import { MeetingKind, Translated, formatTimer, meetingTitleKey } from './shared';
 
 @Component({

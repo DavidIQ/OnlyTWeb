@@ -1,6 +1,6 @@
 import { inject } from '@angular/core';
 import { TranslationKey } from '../i18n/i18n';
-import { I18nService } from '../i18n.service';
+import { I18nService } from '../services/i18n.service';
 
 export type MeetingKind = 'midweek' | 'weekend';
 

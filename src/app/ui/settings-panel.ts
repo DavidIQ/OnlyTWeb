@@ -1,6 +1,6 @@
 import { Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MeetingSettingsChanges } from '../api.service';
+import { MeetingSettingsChanges } from '../services/api.service';
 import { TranslationKey } from '../i18n/i18n';
 import { Translated } from './shared';
 

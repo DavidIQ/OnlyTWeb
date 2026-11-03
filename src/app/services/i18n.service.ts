@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { LANGUAGES, LanguageCode, TRANSLATIONS, TranslationKey } from './i18n/i18n';
+import { LANGUAGES, LanguageCode, TRANSLATIONS, TranslationKey } from '../i18n/i18n';
 
 const STORAGE_KEY = 'onlyt.language';
 
