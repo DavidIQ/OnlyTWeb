@@ -129,6 +129,7 @@
 body {
   min-width: 360px;
   min-height: 100vh;
+  min-height: 100dvh;
   margin: 0;
   background:
     radial-gradient(ellipse at 82% 0%,     var(--bg-glow), transparent 38rem),

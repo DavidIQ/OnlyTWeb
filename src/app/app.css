@@ -1,6 +1,7 @@
 app-root {
   display: block;
   min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .shell {
@@ -1023,6 +1024,7 @@ h2 {
 .display-mode {
   display: grid;
   min-height: 100vh;
+  min-height: 100dvh;
   place-items: center;
   padding: 0 clamp(20px, 5vw, 72px);
   background: #000;
@@ -1078,6 +1080,7 @@ h2 {
 .progress-page {
   box-sizing: border-box;
   min-height: 100vh;
+  min-height: 100dvh;
   margin: 0 auto;
   padding: 32px clamp(20px, 5vw, 64px);
   background: var(--pp-bg);
