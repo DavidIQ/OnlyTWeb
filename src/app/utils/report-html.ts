@@ -165,6 +165,15 @@ export async function buildReportEmail(source: HTMLElement): Promise<BuiltReport
 
   for (const [from, to] of pairs) {
     to.style.cssText = inlineStyle(from);
+    if (from.matches('.progress-list')) {
+      // The centred list leaves a wide left margin on screen; in the email it should sit flush left.
+      to.style.margin = '0';
+      to.style.maxWidth = 'none';
+    }
+    if (from.matches('.progress-remaining')) {
+      // Non-breaking spaces keep the sign and the amount on one line.
+      to.textContent = (to.textContent ?? '').replace(/\s/g, '\u00a0');
+    }
     if (from.matches('.progress-row.running .progress-title')) {
       const marker = document.createElement('span');
       marker.textContent = ' ●';
@@ -215,6 +224,7 @@ export async function buildReportEmail(source: HTMLElement): Promise<BuiltReport
 
   root.style.maxWidth = '820px';
   root.style.margin = '0 auto';
+  root.style.padding = '24px';
   root.style.minHeight = '0';
   const html =
     '<!DOCTYPE html><html><head><meta charset="utf-8"></head>' +

@@ -13,6 +13,10 @@ import { MeetingKind, Translated, meetingTitleKey } from './shared';
   <span class="report-label">{{ t('report.from') }}</span>
   <span class="report-from-address">{{ from() }}</span>
 </div>
+<div class="report-from">
+  <span class="report-label">{{ t('report.subject') }}</span>
+  <span class="report-from-address">{{ subject() }}</span>
+</div>
 <label class="setup-field">
   <span>{{ t('report.recipients') }}</span>
   <span class="input-with-clear">
@@ -41,6 +45,7 @@ import { MeetingKind, Translated, meetingTitleKey } from './shared';
 })
 export class ReportPanel extends Translated {
   readonly from = input.required<string>();
+  readonly subject = input.required<string>();
   readonly recipients = model.required<string>();
   readonly error = input<TranslationKey | ''>('');
   readonly sending = input(false);

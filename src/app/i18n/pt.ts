@@ -12,6 +12,8 @@ export const pt: Translations = {
   'feature.emailReportCopy': 'Enviar o relatório da reunião por e-mail',
   'report.title': 'Relatório por e-mail',
   'report.from': 'De',
+  'report.subject': 'Assunto',
+  'report.subjectText': 'Resumo da reunião',
   'report.recipients': 'Destinatários',
   'report.hint': 'Separe vários endereços com vírgulas.',
   'report.clear': 'Limpar destinatários',

@@ -10,6 +10,8 @@ export const en = {
   'feature.emailReportCopy': 'Send the meeting report by email',
   'report.title': 'Email report',
   'report.from': 'From',
+  'report.subject': 'Subject',
+  'report.subjectText': 'Meeting Summary',
   'report.recipients': 'Recipients',
   'report.hint': 'Separate several addresses with commas.',
   'report.clear': 'Clear recipients',

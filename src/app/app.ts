@@ -91,6 +91,7 @@ const COUNSEL_ALLOWED_SECONDS = 60;
     <section
       app-report-panel
       [from]="reportFrom"
+      [subject]="reportSubject"
       [(recipients)]="reportRecipients"
       [error]="reportError"
       [sending]="sendingReport"
@@ -174,6 +175,9 @@ export class App implements OnInit, OnDestroy {
   showReport = false;
   reportFrom = '';
   reportRecipients = '';
+  get reportSubject(): string {
+    return `${this.i18n.t('report.subjectText')}: ${new Date().toLocaleDateString(this.i18n.language)}`;
+  }
   reportError: TranslationKey | '' = '';
   sendingReport = false;
   authenticated: boolean | null = null;
@@ -415,7 +419,7 @@ export class App implements OnInit, OnDestroy {
       } finally {
         preview.classList.remove('force-light');
       }
-      const title = this.i18n.t(meetingTitleKey(this.activeMeeting));
+      const title = this.reportSubject;
       await this.api.sendReport({ recipients, subject: title, html: report.html, images: report.images });
       this.showReport = false;
       window.scrollTo({ top: 0, behavior: 'smooth' });
