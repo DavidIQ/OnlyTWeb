@@ -176,7 +176,7 @@ export class App implements OnInit, OnDestroy {
   reportFrom = '';
   reportRecipients = '';
   get reportSubject(): string {
-    return `${this.i18n.t('report.subjectText')}: ${new Date().toLocaleDateString(this.i18n.language)}`;
+    return `${this.i18n.t('report.subjectText')}: ${new Date().toLocaleDateString(this.i18n.language, { dateStyle: 'long' })}`;
   }
   reportError: TranslationKey | '' = '';
   sendingReport = false;
