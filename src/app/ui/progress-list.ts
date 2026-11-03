@@ -11,6 +11,7 @@ export interface ProgressRow {
   duration: number;
   times: string;
   remaining: number | null;
+  closing?: boolean;
 }
 
 @Component({
@@ -63,7 +64,7 @@ export interface ProgressRow {
 </ng-template>
 
 @for (row of rows(); track $index) {
-  <li class="progress-row" [class]="row.theme ? 'progress-row theme-' + row.theme : 'progress-row'" [class.counsel]="row.counsel" [class.pending]="row.state === 'pending'" [class.running]="row.state === 'running'">
+  <li class="progress-row" [class]="row.theme ? 'progress-row theme-' + row.theme : 'progress-row'" [class.counsel]="row.counsel" [class.pending]="row.state === 'pending'" [class.running]="row.state === 'running'" [class.closing]="row.closing === true">
     @if (row.heading; as heading) {
       <h2 class="progress-section" [class]="'progress-section section-' + heading.key">
         <span class="section-badge" aria-hidden="true">

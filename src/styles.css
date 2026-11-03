@@ -37,6 +37,7 @@
   --pp-muted: #808080;
   --pp-ok: #008000;
   --pp-late: #d00000;
+  --pp-warn: #b87500;
   --pp-badge: #555;
   --pp-treasures: #2a6b77;
   --pp-treasures-badge: #3c7f8b;
@@ -95,6 +96,7 @@
     --pp-muted: #8a94a3;
     --pp-ok: #4cc77a;
     --pp-late: #ff6b6b;
+    --pp-warn: #ffd23f;
     --pp-treasures: #6cc0cf;
     --pp-ministry: #e0a93e;
     --pp-living: #ff7f68;

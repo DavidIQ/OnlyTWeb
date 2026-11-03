@@ -495,6 +495,7 @@ export class App implements OnInit, OnDestroy {
           duration: this.elapsedSeconds,
           times: item.startTime === null ? '' : `(${this.formatClock(item.startTime)} - )`,
           remaining: item.actualDurationSecs - this.elapsedSeconds,
+          closing: this.isClosing,
         });
         return;
       }

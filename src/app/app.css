@@ -1119,6 +1119,12 @@ h2 {
   color: var(--pp-late);
 }
 
+.progress-row.closing .progress-duration,
+.progress-row.closing .progress-remaining {
+  color: var(--pp-warn);
+  font-weight: 700;
+}
+
 .progress-section {
   display: flex;
   align-items: center;
