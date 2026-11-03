@@ -936,6 +936,13 @@ h2 {
     width: min(100% - 28px, 440px);
   }
 
+  /* Most text is 9-13px, so scale it up a little on phones. */
+  .shell,
+  .progress-page > .progress-header,
+  .progress-page > .progress-list {
+    zoom: 1.1;
+  }
+
   .topbar {
     height: 48px;
   }
