@@ -120,19 +120,29 @@ function flexToTable(destination: HTMLElement, source: HTMLElement, sources: Map
   const row = table.appendChild(document.createElement('tbody')).appendChild(document.createElement('tr'));
 
   const children = Array.from(destination.children) as HTMLElement[];
+  const growsAt = children.map((child) => {
+    const childSource = sources.get(child);
+    return childSource ? parseFloat(getComputedStyle(childSource).flexGrow) > 0 : false;
+  });
+  // Without a growing child, the last cell takes the spare width so the others stay packed to the left.
+  const fillIndex = growsAt.includes(true) ? -1 : children.length - 1;
   children.forEach((child, index) => {
     const cell = row.appendChild(document.createElement('td'));
     cell.style.verticalAlign = align;
     if (index < children.length - 1 && gap) {
       cell.style.paddingRight = `${gap}px`;
     }
-    const childSource = sources.get(child);
-    const grows = childSource ? parseFloat(getComputedStyle(childSource).flexGrow) > 0 : false;
-    if (grows && child.childNodes.length === 0) {
+    if (growsAt[index] && child.childNodes.length === 0) {
       // The dotted leader: a growing empty box becomes a full-width cell with the same bottom border.
       cell.style.cssText = `${child.style.cssText};width:100%;vertical-align:${align}`;
     } else {
       cell.appendChild(child);
+      if (index === fillIndex) {
+        cell.style.width = '100%';
+      } else {
+        cell.style.width = '1%';
+        cell.style.whiteSpace = 'nowrap';
+      }
     }
   });
   destination.replaceWith(table);

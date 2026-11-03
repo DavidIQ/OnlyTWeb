@@ -13,6 +13,7 @@ final class ReportMailer
     {
         $host = strtolower((string)($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? ''));
         $host = preg_replace('/:\d+$/', '', $host) ?? '';
+        $host = preg_replace('/^www\./', '', $host) ?? '';
         if (preg_match('/^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$/', $host) !== 1) {
             $host = 'localhost';
         }
