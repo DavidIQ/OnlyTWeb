@@ -64,22 +64,22 @@ The timer API adds an `elapsedSeconds` field while retaining the existing proper
 
 ## Publish to a server
 
-The client is static files and the API is PHP, so any Linux host with a web server (nginx or Apache), PHP-FPM 8.1+ and the `pdo_sqlite` and `dom` extensions works. For the email report, configure PHP mail (for example a local Postfix/sendmail) and make sure the host may send mail as `MeetingReport@your-domain`. Use HTTPS: the PIN is sent to the server.
+The client is static files and the API is PHP, so any Linux host with a web server (nginx or Apache), PHP-FPM 8.1+ and the `pdo_sqlite` and `dom` extensions works. For the email report, configure PHP mail (for example a local Postfix/sendmail) and make sure the host may send mail as `MeetingReport@your-domain`. Use HTTPS: the PIN is sent to the server. The examples serve the app from its own folder, `https://onlyt.example.org/onlyt/` (the folder name is up to you; use it consistently as below).
 
 1. **Configure.** Set a new PIN in `backend/config.php`. Set the PHP time zone to the congregation's local time (`date.timezone = America/New_York` in `php.ini` or the pool config), because adaptive mode compares the meeting start time with the server clock.
 2. **Build the client** on your computer:
 
    ```powershell
    npm install
-   npm run build
+   npm run build -- --base-href /onlyt/
    ```
 
-   The static site is created in `dist/onlyt-web/browser`.
+   The static site is created in `dist/onlyt-web/browser`. The `--base-href` value must match the folder the app is served from (use `/` for the domain root).
 3. **Upload** to a layout like this, keeping `backend` outside the web root so `config.php` and the database can't be downloaded:
 
    ```text
    /var/www/onlyt/
-     web/       <- contents of dist/onlyt-web/browser (the web root)
+     web/       <- contents of dist/onlyt-web/browser (served at /onlyt/)
      backend/   <- the backend folder (public/, src/, storage/, config.php)
    ```
 
@@ -90,7 +90,7 @@ The client is static files and the API is PHP, so any Linux host with a web serv
    sudo chmod 770 /var/www/onlyt/backend/storage
    ```
 
-5. **Web server.** Serve the static site, send `/api` to `backend/public/index.php`, and fall back to `index.html` for every other path so `/display` and `/progress` work when opened directly.
+5. **Web server.** Serve the static site, send `/onlyt/api` to `backend/public/index.php`, and fall back to `index.html` for every other path under `/onlyt/` so `/onlyt/display` and `/onlyt/progress` work when opened directly.
 
    nginx (adjust the server name, certificate and PHP-FPM socket):
 
@@ -100,17 +100,16 @@ The client is static files and the API is PHP, so any Linux host with a web serv
        server_name onlyt.example.org;
        # ssl_certificate / ssl_certificate_key ...
 
-       root /var/www/onlyt/web;
-       index index.html;
-
-       location /api {
+       location /onlyt/api {
            include fastcgi_params;
            fastcgi_param SCRIPT_FILENAME /var/www/onlyt/backend/public/index.php;
            fastcgi_pass unix:/run/php/php8.3-fpm.sock;
        }
 
-       location / {
-           try_files $uri $uri/ /index.html;
+       location /onlyt/ {
+           alias /var/www/onlyt/web/;
+           index index.html;
+           try_files $uri /onlyt/index.html;
        }
    }
    ```
@@ -122,16 +121,16 @@ The client is static files and the API is PHP, so any Linux host with a web serv
        ServerName onlyt.example.org
        # SSLEngine on, SSLCertificateFile ...
 
-       DocumentRoot /var/www/onlyt/web
+       Alias /onlyt/api /var/www/onlyt/backend/public/index.php
+       Alias /onlyt /var/www/onlyt/web
        <Directory /var/www/onlyt/web>
            Require all granted
            RewriteEngine On
-           RewriteCond %{REQUEST_URI} !^/api
+           RewriteBase /onlyt/
            RewriteCond %{REQUEST_FILENAME} !-f
-           RewriteRule ^ /index.html [L]
+           RewriteRule ^ /onlyt/index.html [L]
        </Directory>
 
-       Alias /api /var/www/onlyt/backend/public/index.php
        <Directory /var/www/onlyt/backend/public>
            Require all granted
            <FilesMatch "\.php$">
@@ -141,7 +140,7 @@ The client is static files and the API is PHP, so any Linux host with a web serv
    </VirtualHost>
    ```
 
-   Apache with `.htaccess` only (shared hosting, where you can't edit the virtual host or use `Alias`). Everything lives in one folder inside the web root, here `public_html/onlyt/`, served at `https://example.org/onlyt/`. This needs `mod_rewrite` and `AllowOverride` enabled for `.htaccess`. Use this layout instead of the one in step 3:
+   Apache with `.htaccess` only (shared hosting, where you can't edit the virtual host or use `Alias`). Everything lives in one folder inside the web root, here `public_html/onlyt/`, served at `https://example.org/onlyt/`. This needs `mod_rewrite` and `AllowOverride` enabled for `.htaccess`. Use this layout instead of the one in step 3 (the build command is the same as in step 2):
 
    ```text
    public_html/onlyt/
@@ -193,7 +192,7 @@ The client is static files and the API is PHP, so any Linux host with a web serv
       Check that `https://example.org/onlyt/backend/config.php` and `https://example.org/onlyt/backend/storage/onlyt.sqlite` return 403.
 
    The app and API use paths relative to the folder, so the same build works under any folder name as long as it is built with the matching `--base-href`.
-6. **Check it.** Open `https://onlyt.example.org/api/` (it should return `{"lowVersion":1,"highVersion":4}`), then the site root, which asks for the PIN. Open `/display` on the projector or second screen. (In the `.htaccess` setup these are `https://example.org/onlyt/api/`, `/onlyt/` and `/onlyt/display`.)
+6. **Check it.** Open `https://onlyt.example.org/onlyt/api/` (it should return `{"lowVersion":1,"highVersion":4}`), then `https://onlyt.example.org/onlyt/`, which asks for the PIN. Open `/onlyt/display` on the projector or second screen. (In the `.htaccess` setup the host is `https://example.org` instead.)
 
 **Updating.** Rebuild, then replace the contents of `web/` and the `backend/public` and `backend/src` folders. Don't overwrite `backend/storage` (your schedule, settings and timings) or `backend/config.php` (your PIN). Database changes are applied automatically on the next request. To back up, copy `backend/storage/onlyt.sqlite`.
 
