@@ -18,7 +18,7 @@ import { SetupCard } from './ui/setup-card';
 import { MeetingKind, meetingTitleKey } from './ui/shared';
 import { TimerColumn } from './ui/timer-column';
 
-const LAST_MINUTE_SECONDS = 60;
+const LAST_MINUTE_SECONDS = 30;
 const COUNSEL_ALLOWED_SECONDS = 60;
 
 @Component({
