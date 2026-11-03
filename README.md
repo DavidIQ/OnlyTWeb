@@ -141,6 +141,41 @@ The client is static files and the API is PHP, so any Linux host with a web serv
    </VirtualHost>
    ```
 
+   Apache with `.htaccess` only (shared hosting, where you can't edit the virtual host or use `Alias`). Keep `backend/` outside the web root as in step 3, with the web root being `web/` (often `public_html`). The API reads its routes from the request URL, so the site must be served from the domain root (not a sub-folder), and the host must have `mod_rewrite` and `AllowOverride` enabled for `.htaccess`.
+
+   1. Create `web/api.php`, a small entry point that loads the real one (adjust the path if your `backend` folder is elsewhere):
+
+      ```php
+      <?php
+      require __DIR__ . '/../backend/public/index.php';
+      ```
+
+   2. Create `web/.htaccess`:
+
+      ```apache
+      RewriteEngine On
+
+      # Force HTTPS (the PIN is sent to the server)
+      RewriteCond %{HTTPS} off
+      RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+      # Send the API to the PHP entry point
+      RewriteRule ^api(/.*)?$ api.php [L]
+
+      # Serve real files as-is, and fall back to index.html so /display and /progress work when opened directly
+      RewriteCond %{REQUEST_FILENAME} !-f
+      RewriteCond %{REQUEST_FILENAME} !-d
+      RewriteRule ^ /index.html [L]
+      ```
+
+   3. If you can't put `backend/` outside the web root, place it inside (for example `web/backend/`, with `require __DIR__ . '/backend/public/index.php';` in `api.php`) and block direct access with `web/backend/.htaccess`:
+
+      ```apache
+      Require all denied
+      ```
+
+      Check that `https://onlyt.example.org/backend/config.php` and `https://onlyt.example.org/backend/storage/onlyt.sqlite` return 403, because they contain the PIN and your data.
+
 6. **Check it.** Open `https://onlyt.example.org/api/` (it should return `{"lowVersion":1,"highVersion":4}`), then the site root, which asks for the PIN. Open `/display` on the projector or second screen.
 
 **Updating.** Rebuild, then replace the contents of `web/` and the `backend/public` and `backend/src` folders. Don't overwrite `backend/storage` (your schedule, settings and timings) or `backend/config.php` (your PIN). Database changes are applied automatically on the next request. To back up, copy `backend/storage/onlyt.sqlite`.
