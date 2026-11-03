@@ -97,6 +97,7 @@ const COUNSEL_ALLOWED_SECONDS = 60;
       [meeting]="activeMeeting"
       [rows]="progressRows"
       (cancelled)="closeReport()"
+      (recipientsCleared)="clearRecipients()"
       (sendRequested)="sendReport($event)"
     ></section>
   } @else {
@@ -369,6 +370,17 @@ export class App implements OnInit, OnDestroy {
       this.reportRecipients = info.recipients.join(', ');
     } catch {
       // The form still works without saved recipients.
+    }
+    this.changeDetector.markForCheck();
+  }
+
+  async clearRecipients(): Promise<void> {
+    this.reportRecipients = '';
+    this.reportError = '';
+    try {
+      await this.api.clearReportRecipients();
+    } catch (error) {
+      this.reportError = this.errorText(error);
     }
     this.changeDetector.markForCheck();
   }

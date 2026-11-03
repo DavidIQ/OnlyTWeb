@@ -14,6 +14,7 @@ export const pt: Translations = {
   'report.from': 'De',
   'report.recipients': 'Destinatários',
   'report.hint': 'Separe vários endereços com vírgulas.',
+  'report.clear': 'Limpar destinatários',
   'report.send': 'Enviar',
   'report.sending': 'Enviando...',
   'report.sent': 'Relatório enviado',

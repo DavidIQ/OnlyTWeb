@@ -12,6 +12,7 @@ export const en = {
   'report.from': 'From',
   'report.recipients': 'Recipients',
   'report.hint': 'Separate several addresses with commas.',
+  'report.clear': 'Clear recipients',
   'report.send': 'Send',
   'report.sending': 'Sending...',
   'report.sent': 'Report sent',

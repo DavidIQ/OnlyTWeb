@@ -15,7 +15,14 @@ import { MeetingKind, Translated, meetingTitleKey } from './shared';
 </div>
 <label class="setup-field">
   <span>{{ t('report.recipients') }}</span>
-  <input type="text" name="recipients" autocomplete="email" [ngModel]="recipients()" (ngModelChange)="recipients.set($event)" [attr.aria-invalid]="!!error()" />
+  <span class="input-with-clear">
+    <input type="text" name="recipients" autocomplete="email" [ngModel]="recipients()" (ngModelChange)="recipients.set($event)" [attr.aria-invalid]="!!error()" />
+    @if (recipients()) {
+      <button class="clear-button" type="button" [attr.aria-label]="t('report.clear')" (click)="recipientsCleared.emit()">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 10v6M14 10v6"/></svg>
+      </button>
+    }
+  </span>
   <span class="field-hint">{{ t('report.hint') }}</span>
 </label>
 <div class="progress-page report-preview" #reportPreview>
@@ -40,6 +47,7 @@ export class ReportPanel extends Translated {
   readonly meeting = input.required<MeetingKind>();
   readonly rows = input.required<ProgressRow[]>();
   readonly cancelled = output<void>();
+  readonly recipientsCleared = output<void>();
   readonly sendRequested = output<HTMLElement>();
 
   protected readonly meetingTitleKey = meetingTitleKey;

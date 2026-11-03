@@ -120,6 +120,10 @@ export class ApiService {
     return firstValueFrom(this.http.get<ReportInfo>(`${this.baseUrl}/report`));
   }
 
+  clearReportRecipients(): Promise<unknown> {
+    return firstValueFrom(this.http.delete(`${this.baseUrl}/report/recipients`));
+  }
+
   sendReport(report: ReportEmail): Promise<unknown> {
     return firstValueFrom(this.http.post(`${this.baseUrl}/report/email`, report));
   }

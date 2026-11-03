@@ -265,6 +265,14 @@ function handleRequest(): never
         respond(['from' => ReportMailer::senderAddress(), 'recipients' => $store->reportRecipients()]);
     }
 
+    if ($path === '/api/v1/report/recipients') {
+        if ($method !== 'DELETE') {
+            throw new ApiException(405, 'Method not allowed.');
+        }
+        $store->saveReportRecipients([]);
+        respond(['success' => true]);
+    }
+
     if ($path === '/api/v1/report/email') {
         if ($method !== 'POST') {
             throw new ApiException(405, 'Method not allowed.');

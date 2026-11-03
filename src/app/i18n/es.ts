@@ -14,6 +14,7 @@ export const es: Translations = {
   'report.from': 'De',
   'report.recipients': 'Destinatarios',
   'report.hint': 'Separe varias direcciones con comas.',
+  'report.clear': 'Borrar destinatarios',
   'report.send': 'Enviar',
   'report.sending': 'Enviando...',
   'report.sent': 'Informe enviado',
