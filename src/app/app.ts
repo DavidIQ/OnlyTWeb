@@ -3,7 +3,7 @@ import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewEncapsulation } fr
 import { ApiService, MeetingSettingsChanges, MidweekOptions, SchedulePreviewItem, SettingsData, TimerInfo, TimerStatus } from './services/api.service';
 import { TranslationKey } from './i18n/i18n';
 import { I18nService } from './services/i18n.service';
-import { buildReportEmail } from './report-html';
+import { buildReportEmail } from './utils/report-html';
 import { DisplayView } from './ui/display-view';
 import { LanguagePicker } from './ui/language-picker';
 import { PageFooter } from './ui/page-footer';

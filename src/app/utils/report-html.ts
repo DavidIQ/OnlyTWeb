@@ -1,4 +1,4 @@
-import { ReportImage } from './services/api.service';
+import { ReportImage } from '../services/api.service';
 
 export interface BuiltReport {
   html: string;
