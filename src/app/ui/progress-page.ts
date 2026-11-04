@@ -7,10 +7,13 @@ import { MeetingKind, Translated, meetingTitleKey } from './shared';
   selector: 'main[app-progress-page]',
   imports: [LanguagePicker, ProgressList],
   template: `
+<div class="progress-display-link">
+  <a href="display">{{ t('progress.back') }}</a>
+</div>
+
 <header class="progress-header">
   <h1>{{ t(meetingTitleKey(meeting())) }}</h1>
   <div class="progress-actions">
-    <a href="display">{{ t('progress.back') }}</a>
     <label app-language-picker [persist]="false"></label>
   </div>
 </header>

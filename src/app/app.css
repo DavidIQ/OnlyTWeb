@@ -1109,6 +1109,12 @@ h2 {
   font-size: 24px;
 }
 
+.progress-display-link {
+  max-width: 820px;
+  margin: 0 auto 6px;
+  font-size: 13px;
+}
+
 .progress-actions {
   display: flex;
   align-items: center;
