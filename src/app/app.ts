@@ -141,7 +141,7 @@ const SETTINGS_POLL_MS = 30000;
     <aside
       app-schedule-card
       [meeting]="activeMeeting"
-      [language]="congregationLanguage"
+      [language]="i18n.language"
       [meetingTimes]="meetingTimes"
       [timers]="visibleTimers"
       [selectedTalkId]="selectedTalkId"
