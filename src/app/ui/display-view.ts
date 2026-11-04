@@ -5,7 +5,15 @@ import { Translated, formatTimer } from './shared';
   selector: 'main[app-display-view]',
   template: `
 <div class="display-time" aria-live="off">
-  {{ running() ? formatTimer(seconds()) : clockText() }}
+  <div class="display-clock">
+    @if (!running()) {
+      <div class="display-date">{{ clockDate() }}</div>
+    }
+    <div>{{ running() ? formatTimer(seconds()) : clockText() }}</div>
+    @if (!running() && clockPeriod()) {
+      <div class="display-period">{{ clockPeriod() }}</div>
+    }
+  </div>
 </div>
 @if (reconnecting()) {
   <div class="reconnecting-message" role="status" aria-live="polite">
@@ -27,6 +35,8 @@ export class DisplayView extends Translated {
   readonly closing = input.required<boolean>();
   readonly seconds = input.required<number>();
   readonly clockText = input.required<string>();
+  readonly clockPeriod = input.required<string>();
+  readonly clockDate = input.required<string>();
   readonly reconnecting = input(false);
   readonly dots = input.required<string>();
 

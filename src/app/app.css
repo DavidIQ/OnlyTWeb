@@ -1053,6 +1053,31 @@ h2 {
   font-variant-numeric: tabular-nums;
 }
 
+.display-clock {
+  display: grid;
+  justify-items: stretch;
+}
+
+.display-date {
+  margin-bottom: -8px;
+  color: #737b8b;
+  font-size: clamp(18px, 3vw, 42px);
+  font-weight: 400;
+  letter-spacing: normal;
+  line-height: 1;
+  text-align: center;
+}
+
+.display-period {
+  margin: 0 5px;
+  color: #737b8b;
+  font-size: clamp(18px, 3vw, 42px);
+  font-weight: 400;
+  letter-spacing: normal;
+  line-height: 1;
+  text-align: right;
+}
+
 .display-mode.running .display-time {
   color: #3ddc84;
 }

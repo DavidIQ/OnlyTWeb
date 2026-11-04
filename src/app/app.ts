@@ -37,6 +37,8 @@ const SETTINGS_POLL_MS = 30000;
     [closing]="isClosing"
     [seconds]="displayedSeconds"
     [clockText]="clockText"
+    [clockPeriod]="clockPeriod"
+    [clockDate]="clockDate"
     [reconnecting]="reconnecting"
     [dots]="reconnectDotsText"
   ></main>
@@ -324,6 +326,19 @@ export class App implements OnInit, OnDestroy {
 
   get clockText(): string {
     return this.formatClock(this.currentTime.getTime() / 1000, false);
+  }
+
+  get clockDate(): string {
+    return new Intl.DateTimeFormat(this.i18n.language, { dateStyle: 'full' }).format(this.currentTime);
+  }
+
+  get clockPeriod(): string {
+    return new Intl.DateTimeFormat(this.i18n.language, {
+      hour: 'numeric',
+      hour12: true,
+    })
+      .formatToParts(this.currentTime)
+      .find((part) => part.type === 'dayPeriod')?.value ?? '';
   }
 
   // A running timer's meeting wins, then the meeting used most recently, otherwise today's meeting.
