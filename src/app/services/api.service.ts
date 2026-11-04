@@ -26,6 +26,7 @@ export interface TimerStatus {
   isRunning: boolean;
   timeElapsed: string;
   elapsedSeconds: number;
+  elapsedPrecise?: number;
   closingSecs: number;
 }
 

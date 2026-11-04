@@ -7,6 +7,11 @@ require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATO
 require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'AdaptiveMode.php';
 require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'ReportMailer.php';
 
+// Polling responses are repetitive JSON, so compress them when the client accepts it.
+if (extension_loaded('zlib') && !ini_get('zlib.output_compression')) {
+    ob_start('ob_gzhandler');
+}
+
 final class ApiException extends RuntimeException
 {
     public function __construct(
@@ -62,6 +67,10 @@ function currentStatus(array $status): array
         'isRunning' => $status['isRunning'],
         'timeElapsed' => sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds),
         'elapsedSeconds' => $elapsedSeconds,
+        // Sub-second precision lets the client keep its local count aligned with the server clock between polls.
+        'elapsedPrecise' => $status['isRunning'] && $status['startedAt'] !== null
+            ? round($status['elapsedSeconds'] + max(0.0, microtime(true) - $status['startedAt']), 3)
+            : $elapsedSeconds,
         'closingSecs' => $status['closingSecs'],
     ];
 }

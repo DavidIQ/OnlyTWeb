@@ -21,6 +21,9 @@ import { TimerColumn } from './ui/timer-column';
 
 const LAST_MINUTE_SECONDS = 30;
 const COUNSEL_ALLOWED_SECONDS = 60;
+const POLL_MS = 2000;
+const HIDDEN_POLL_MS = 10000;
+const SETTINGS_POLL_MS = 30000;
 
 @Component({
   selector: 'app-root',
@@ -195,6 +198,7 @@ export class App implements OnInit, OnDestroy {
   private clockHandle: number | undefined;
   private reconnectHandle: number | undefined;
   private statusReceivedAt = Date.now();
+  private settingsFetchedAt = 0;
   private refreshInProgress = false;
   private authCheckInProgress = false;
   private retryDelayMs = 1000;
@@ -204,6 +208,12 @@ export class App implements OnInit, OnDestroy {
       void this.checkAuth();
     }
     void this.refresh();
+  };
+  // Hidden tabs poll slowly; catch up straight away when the tab is shown again.
+  private readonly visibilityListener = (): void => {
+    if (!document.hidden) {
+      void this.refresh();
+    }
   };
   private readonly offlineListener = (): void => {
     this.setReconnecting(true);
@@ -234,6 +244,7 @@ export class App implements OnInit, OnDestroy {
     window.addEventListener('storage', this.storageListener);
     window.addEventListener('online', this.onlineListener);
     window.addEventListener('offline', this.offlineListener);
+    document.addEventListener('visibilitychange', this.visibilityListener);
     if (!navigator.onLine) {
       this.setReconnecting(true);
     }
@@ -243,18 +254,22 @@ export class App implements OnInit, OnDestroy {
       void this.checkAuth();
     }
     void this.refresh();
-    if (this.isDisplayMode) {
-      this.clockHandle = window.setInterval(() => {
+    // Ticking faster than once a second keeps the shown second from lagging behind its true boundary.
+    this.clockHandle = window.setInterval(() => {
+      if (this.isDisplayMode) {
         this.currentTime = new Date();
+      }
+      if (this.isDisplayMode || this.isRunning) {
         this.changeDetector.markForCheck();
-      }, 1000);
-    }
+      }
+    }, 250);
   }
 
   ngOnDestroy(): void {
     window.removeEventListener('storage', this.storageListener);
     window.removeEventListener('online', this.onlineListener);
     window.removeEventListener('offline', this.offlineListener);
+    document.removeEventListener('visibilitychange', this.visibilityListener);
     if (this.refreshHandle !== undefined) {
       window.clearTimeout(this.refreshHandle);
     }
@@ -656,13 +671,13 @@ export class App implements OnInit, OnDestroy {
     return this.status?.isRunning ?? false;
   }
 
-  // While disconnected, keep counting from the last status received so the display doesn't freeze.
+  // Between polls (and while disconnected) the count continues locally from the last status received.
   get elapsedSeconds(): number {
-    const elapsed = this.status?.elapsedSeconds ?? 0;
-    if (this.reconnecting && this.isRunning) {
-      return elapsed + Math.max(0, Math.floor((Date.now() - this.statusReceivedAt) / 1000));
+    const elapsed = this.status?.elapsedPrecise ?? this.status?.elapsedSeconds ?? 0;
+    if (this.isRunning) {
+      return Math.floor(elapsed + Math.max(0, Date.now() - this.statusReceivedAt) / 1000);
     }
-    return elapsed;
+    return Math.floor(elapsed);
   }
 
   get actualDurationSeconds(): number {
@@ -707,17 +722,22 @@ export class App implements OnInit, OnDestroy {
       window.clearTimeout(this.refreshHandle);
       this.refreshHandle = undefined;
     }
-    let nextRefreshDelay = 1000;
+    let nextRefreshDelay = document.hidden ? HIDDEN_POLL_MS : POLL_MS;
     try {
+      // Settings rarely change, so they are not fetched on every poll.
+      const settingsDue = !this.settings || Date.now() - this.settingsFetchedAt >= SETTINGS_POLL_MS;
       const [timers, settings] = await Promise.all([
         this.api.getTimers(),
-        this.api.getSettings(),
+        settingsDue ? this.api.getSettings() : Promise.resolve(null),
       ]);
       this.timerInfo = timers.timerInfo;
       this.status = timers.status;
       this.statusReceivedAt = Date.now();
-      if (!this.savingSettings) {
-        this.settings = settings;
+      if (settings) {
+        this.settingsFetchedAt = Date.now();
+        if (!this.savingSettings) {
+          this.settings = settings;
+        }
       }
       this.scheduleLoaded = true;
 
@@ -743,7 +763,7 @@ export class App implements OnInit, OnDestroy {
     } catch (error) {
       this.errorMessage = this.errorText(error);
       this.setReconnecting(true);
-      nextRefreshDelay = this.retryDelayMs;
+      nextRefreshDelay = Math.max(this.retryDelayMs, nextRefreshDelay);
       this.retryDelayMs = Math.min(this.retryDelayMs * 2, 30000);
     } finally {
       this.loading = false;
