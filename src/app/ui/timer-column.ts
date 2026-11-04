@@ -101,13 +101,6 @@ import { Translated, formatTimer } from './shared';
 </article>
 
 <div class="feature-row">
-  <article class="feature-card">
-    <span class="feature-icon">◷</span>
-    <div>
-      <p class="feature-title">{{ t('feature.timerMode') }}</p>
-      <p class="feature-copy">{{ selectedTalk()?.countUp ? t('feature.countsUp') : t('feature.countsDown') }}</p>
-    </div>
-  </article>
   <button class="feature-card feature-button" type="button" (click)="reportRequested.emit()">
     <span class="feature-icon">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
@@ -117,6 +110,13 @@ import { Translated, formatTimer } from './shared';
       <p class="feature-copy">{{ t('feature.emailReportCopy') }}</p>
     </div>
   </button>
+  <article class="feature-card">
+    <span class="feature-icon">◷</span>
+    <div>
+      <p class="feature-title">{{ t('feature.timerMode') }}</p>
+      <p class="feature-copy">{{ selectedTalk()?.countUp ? t('feature.countsUp') : t('feature.countsDown') }}</p>
+    </div>
+  </article>
 </div>
 `,
   host: { class: 'timer-column' },
