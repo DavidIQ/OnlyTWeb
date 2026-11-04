@@ -29,13 +29,13 @@ final class AdaptiveMode
     public static function calculate(array $state, int $talkId, float $now): ?int
     {
         $mode = $state['settings']['adaptiveMode'];
-        if ($mode === self::NONE || !in_array($talkId, self::ADAPTABLE, true)) {
+        if ($mode === self::NONE) {
             return null;
         }
 
         $current = null;
         foreach ($state['timerInfo'] as $timer) {
-            if ($timer['talkId'] === $talkId) {
+            if ($timer['talkId'] === $talkId && self::isAdaptable($timer)) {
                 $current = $timer;
                 break;
             }
@@ -89,7 +89,7 @@ final class AdaptiveMode
             if ($index + 1 < $count) {
                 $requiredRemaining += $offsets[$index + 1] - ($offsets[$index] + $items[$index]['originalDurationSecs']);
             }
-            if (in_array($items[$index]['talkId'], self::ADAPTABLE, true)) {
+            if (self::isAdaptable($items[$index])) {
                 $adaptableRemaining += $planned;
             }
         }
@@ -113,5 +113,11 @@ final class AdaptiveMode
     private static function planned(array $timer): int
     {
         return $timer['modifiedDurationSecs'] ?? $timer['originalDurationSecs'];
+    }
+
+    private static function isAdaptable(array $timer): bool
+    {
+        return in_array($timer['talkId'], self::ADAPTABLE, true)
+            && ($timer['meeting'] !== MidweekSchedule::MEETING || $timer['meetingSectionNameInternal'] === 'Living');
     }
 }
