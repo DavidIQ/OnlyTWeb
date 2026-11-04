@@ -40,7 +40,11 @@ export class I18nService {
   }
 
   t(key: TranslationKey, params?: Record<string, string | number>): string {
-    let text: string = TRANSLATIONS[this.current][key] ?? TRANSLATIONS.en[key];
+    return this.tFor(this.current, key, params);
+  }
+
+  tFor(language: LanguageCode, key: TranslationKey, params?: Record<string, string | number>): string {
+    let text: string = TRANSLATIONS[language][key] ?? TRANSLATIONS.en[key];
     for (const [name, value] of Object.entries(params ?? {})) {
       text = text.replace(`{${name}}`, String(value));
     }
@@ -52,13 +56,21 @@ export class I18nService {
   }
 
   talkTitle(talk: { talkKey: string; talkTitle: string }): string {
+    return this.talkTitleFor(this.current, talk);
+  }
+
+  talkTitleFor(language: LanguageCode, talk: { talkKey: string; talkTitle: string }): string {
     const key = `talk.${talk.talkKey}`;
-    return this.has(key) ? this.t(key) : talk.talkTitle;
+    return this.has(key) ? this.tFor(language, key) : talk.talkTitle;
   }
 
   sectionName(sectionInternal: string): string {
+    return this.sectionNameFor(this.current, sectionInternal);
+  }
+
+  sectionNameFor(language: LanguageCode, sectionInternal: string): string {
     const key = `section.${sectionInternal.toLowerCase()}`;
-    return this.has(key) ? this.t(key) : sectionInternal;
+    return this.has(key) ? this.tFor(language, key) : sectionInternal;
   }
 
   private persist(code: string): void {

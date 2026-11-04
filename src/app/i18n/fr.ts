@@ -15,6 +15,7 @@ export const fr: Translations = {
   'report.from': 'De',
   'report.subject': 'Objet',
   'report.subjectText': 'Résumé de la réunion',
+  'report.language': 'Langue du rapport',
   'report.recipients': 'Destinataires',
   'report.hint': 'Séparez plusieurs adresses par des virgules.',
   'report.clear': 'Effacer les destinataires',

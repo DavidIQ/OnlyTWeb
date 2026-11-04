@@ -13,6 +13,7 @@ export const en = {
   'report.from': 'From',
   'report.subject': 'Subject',
   'report.subjectText': 'Meeting Summary',
+  'report.language': 'Report language',
   'report.recipients': 'Recipients',
   'report.hint': 'Separate several addresses with commas.',
   'report.clear': 'Clear recipients',

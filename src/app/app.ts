@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
 import { ApiService, MeetingSettingsChanges, MidweekOptions, SchedulePreviewItem, SettingsData, TimerInfo, TimerStatus } from './services/api.service';
-import { TranslationKey } from './i18n/i18n';
+import { LanguageCode, TranslationKey } from './i18n/i18n';
 import { I18nService } from './services/i18n.service';
 import { buildReportEmail } from './utils/report-html';
 import { DisplayView } from './ui/display-view';
@@ -102,9 +102,12 @@ const SETTINGS_POLL_MS = 30000;
       [error]="reportError"
       [sending]="sendingReport"
       [meeting]="activeMeeting"
-      [rows]="progressRows"
+      [rows]="reportRows"
+      [reportLanguage]="reportLanguage"
+      [reportTitle]="reportTitle"
       (cancelled)="closeReport()"
       (recipientsCleared)="clearRecipients()"
+      (reportLanguageChange)="updateSetting({ reportLanguage: $event })"
       (sendRequested)="sendReport($event)"
     ></section>
   } @else {
@@ -184,7 +187,17 @@ export class App implements OnInit, OnDestroy {
   reportFrom = '';
   reportRecipients = '';
   get reportSubject(): string {
-    return `${this.i18n.t('report.subjectText')}: ${new Date().toLocaleDateString(this.i18n.language, { dateStyle: 'long' })}`;
+    const language = this.reportLanguage;
+    return `${this.i18n.tFor(language, 'report.subjectText')}: ${new Date().toLocaleDateString(language, { dateStyle: 'long' })}`;
+  }
+  get reportLanguage(): LanguageCode {
+    return this.settings?.reportLanguage ?? this.i18n.language;
+  }
+  get reportTitle(): string {
+    return this.i18n.tFor(this.reportLanguage, this.activeMeeting === 'weekend' ? 'progress.titleWeekend' : 'progress.titleMidweek');
+  }
+  get reportRows(): ProgressRow[] {
+    return this.buildProgressRows(this.reportLanguage);
   }
   reportError: TranslationKey | '' = '';
   sendingReport = false;
@@ -287,9 +300,9 @@ export class App implements OnInit, OnDestroy {
   }
 
   // The progress page uses the full workbook headings rather than the short section labels.
-  private progressSectionName(sectionInternal: string): string {
+  private progressSectionName(sectionInternal: string, language: LanguageCode): string {
     const key = `progress.section.${sectionInternal.toLowerCase()}`;
-    return this.i18n.has(key) ? this.t(key) : this.i18n.sectionName(sectionInternal);
+    return this.i18n.has(key) ? this.i18n.tFor(language, key) : this.i18n.sectionNameFor(language, sectionInternal);
   }
 
   // Mid-week parts take their section's colour; each weekend part has its own colour and glyph.
@@ -560,16 +573,20 @@ export class App implements OnInit, OnDestroy {
   // finished parts show their actual time, the running part ticks live, and the rest show their
   // planned length. Counsel time is inferred from the gap after each finished student talk.
   get progressRows(): ProgressRow[] {
+    return this.buildProgressRows(this.i18n.language);
+  }
+
+  private buildProgressRows(language: LanguageCode): ProgressRow[] {
     const items = this.visibleTimers;
     const runningId = this.isRunning ? this.status?.talkId : null;
     const hasRun = (item: TimerInfo): boolean => item.startTime !== null && item.endTime !== null && item.endTime - item.startTime > 20;
     const rows: ProgressRow[] = [];
     items.forEach((item, index) => {
-      const title = this.i18n.talkTitle(item);
+      const title = this.i18n.talkTitleFor(language, item);
       // Only the mid-week meeting is split into sections; the weekend has a single run of parts.
       const heading =
         item.meeting === 'midweek' && item.meetingSectionNameInternal !== items[index - 1]?.meetingSectionNameInternal
-          ? { key: item.meetingSectionNameInternal.toLowerCase(), text: this.progressSectionName(item.meetingSectionNameInternal) }
+          ? { key: item.meetingSectionNameInternal.toLowerCase(), text: this.progressSectionName(item.meetingSectionNameInternal, language) }
           : null;
       const theme = this.progressTheme(item);
       if (item.talkId === runningId) {
@@ -580,7 +597,7 @@ export class App implements OnInit, OnDestroy {
           state: 'running',
           title,
           duration: this.elapsedSeconds,
-          times: item.startTime === null ? '' : `(${this.formatClock(item.startTime)} - )`,
+          times: item.startTime === null ? '' : `(${this.formatClock(item.startTime, true, language)} - )`,
           remaining: item.actualDurationSecs - this.elapsedSeconds,
           closing: this.isClosing,
         });
@@ -600,7 +617,7 @@ export class App implements OnInit, OnDestroy {
         state: 'done',
         title,
         duration: Math.round(end - start),
-        times: `(${this.formatClock(start)} - ${this.formatClock(end)})`,
+        times: `(${this.formatClock(start, true, language)} - ${this.formatClock(end, true, language)})`,
         remaining: item.actualDurationSecs - Math.round(end - start),
       });
       const next = items[index + 1];
@@ -611,7 +628,7 @@ export class App implements OnInit, OnDestroy {
           heading: null,
           theme: '',
           state: 'done',
-          title: this.t('progress.counsel'),
+          title: this.i18n.tFor(language, 'progress.counsel'),
           duration: counsel,
           times: '',
           remaining: COUNSEL_ALLOWED_SECONDS - counsel,
@@ -630,8 +647,8 @@ export class App implements OnInit, OnDestroy {
     return Math.ceil(counsel / 5) * 5;
   }
 
-  private formatClock(epochSeconds: number, withPeriod = true): string {
-    const formatter = new Intl.DateTimeFormat(undefined, { timeStyle: 'medium' });
+  private formatClock(epochSeconds: number, withPeriod = true, language: LanguageCode = this.i18n.language): string {
+    const formatter = new Intl.DateTimeFormat(language, { timeStyle: 'medium' });
     const date = new Date(epochSeconds * 1000);
     if (withPeriod) {
       return formatter.format(date);

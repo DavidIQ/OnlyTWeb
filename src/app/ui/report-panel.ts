@@ -1,14 +1,22 @@
 import { Component, input, model, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TranslationKey } from '../i18n/i18n';
+import { LANGUAGES, LanguageCode, TranslationKey } from '../i18n/i18n';
 import { ProgressList, ProgressRow } from './progress-list';
-import { MeetingKind, Translated, meetingTitleKey } from './shared';
+import { MeetingKind, Translated } from './shared';
 
 @Component({
   selector: 'section[app-report-panel]',
   imports: [FormsModule, ProgressList],
   template: `
 <h2>{{ t('report.title') }}</h2>
+<label class="setup-field report-language">
+  <span>{{ t('report.language') }}</span>
+  <select [ngModel]="reportLanguage()" (ngModelChange)="reportLanguageChange.emit($event)">
+    @for (language of languages; track language.code) {
+      <option [value]="language.code">{{ language.name }}</option>
+    }
+  </select>
+</label>
 <div class="report-from">
   <span class="report-label">{{ t('report.from') }}</span>
   <span class="report-from-address">{{ from() }}</span>
@@ -30,7 +38,7 @@ import { MeetingKind, Translated, meetingTitleKey } from './shared';
   <span class="field-hint">{{ t('report.hint') }}</span>
 </label>
 <div class="progress-page report-preview" #reportPreview>
-  <h1>{{ t(meetingTitleKey(meeting())) }}</h1>
+  <h1>{{ reportTitle() }}</h1>
   <ol app-progress-list [rows]="rows()" [meeting]="meeting()"></ol>
 </div>
 <div class="settings-actions">
@@ -51,9 +59,12 @@ export class ReportPanel extends Translated {
   readonly sending = input(false);
   readonly meeting = input.required<MeetingKind>();
   readonly rows = input.required<ProgressRow[]>();
+  readonly reportLanguage = input.required<LanguageCode>();
+  readonly reportTitle = input.required<string>();
   readonly cancelled = output<void>();
   readonly recipientsCleared = output<void>();
+  readonly reportLanguageChange = output<LanguageCode>();
   readonly sendRequested = output<HTMLElement>();
 
-  protected readonly meetingTitleKey = meetingTitleKey;
+  protected readonly languages = LANGUAGES;
 }

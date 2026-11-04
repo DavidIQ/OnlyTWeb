@@ -15,6 +15,7 @@ export const it: Translations = {
   'report.from': 'Da',
   'report.subject': 'Oggetto',
   'report.subjectText': 'Riepilogo della riunione',
+  'report.language': 'Lingua del rapporto',
   'report.recipients': 'Destinatari',
   'report.hint': 'Separa più indirizzi con virgole.',
   'report.clear': 'Cancella destinatari',
