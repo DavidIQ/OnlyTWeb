@@ -663,7 +663,7 @@ export class App implements OnInit, OnDestroy {
   private formatClock(epochSeconds: number, withPeriod = true, language: LanguageCode = this.i18n.language): string {
     const formatter = new Intl.DateTimeFormat(language, {
       timeStyle: 'medium',
-      ...(withPeriod ? {} : { hourCycle: 'h12' }),
+      hourCycle: 'h12',
     });
     const date = new Date(epochSeconds * 1000);
     if (withPeriod) {
