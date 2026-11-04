@@ -16,7 +16,7 @@ import { ReportPanel } from './ui/report-panel';
 import { ScheduleCard } from './ui/schedule-card';
 import { SettingsPanel } from './ui/settings-panel';
 import { SetupCard } from './ui/setup-card';
-import { MeetingKind, meetingTitleKey } from './ui/shared';
+import { MeetingKind } from './ui/shared';
 import { TimerColumn } from './ui/timer-column';
 
 const LAST_MINUTE_SECONDS = 30;
@@ -194,6 +194,7 @@ export class App implements OnInit, OnDestroy {
   private refreshHandle: number | undefined;
   private clockHandle: number | undefined;
   private reconnectHandle: number | undefined;
+  private statusReceivedAt = Date.now();
   private refreshInProgress = false;
   private authCheckInProgress = false;
   private retryDelayMs = 1000;
@@ -655,8 +656,13 @@ export class App implements OnInit, OnDestroy {
     return this.status?.isRunning ?? false;
   }
 
+  // While disconnected, keep counting from the last status received so the display doesn't freeze.
   get elapsedSeconds(): number {
-    return this.status?.elapsedSeconds ?? 0;
+    const elapsed = this.status?.elapsedSeconds ?? 0;
+    if (this.reconnecting && this.isRunning) {
+      return elapsed + Math.max(0, Math.floor((Date.now() - this.statusReceivedAt) / 1000));
+    }
+    return elapsed;
   }
 
   get actualDurationSeconds(): number {
@@ -709,6 +715,7 @@ export class App implements OnInit, OnDestroy {
       ]);
       this.timerInfo = timers.timerInfo;
       this.status = timers.status;
+      this.statusReceivedAt = Date.now();
       if (!this.savingSettings) {
         this.settings = settings;
       }
@@ -838,7 +845,7 @@ export class App implements OnInit, OnDestroy {
       this.reconnectHandle = window.setInterval(() => {
         this.reconnectDots = (this.reconnectDots + 1) % 4;
         this.changeDetector.markForCheck();
-      }, 1000);
+      }, 800);
     } else {
       if (this.reconnectHandle !== undefined) {
         window.clearInterval(this.reconnectHandle);

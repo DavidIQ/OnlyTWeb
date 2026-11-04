@@ -1074,7 +1074,7 @@ h2 {
 .display-mode .reconnecting-message {
   position: absolute;
   top: 20px;
-  right: 20px;
+  left: 20px;
   color: #aab0c0;
 }
 
@@ -1116,7 +1116,8 @@ h2 {
   font-size: 24px;
 }
 
-.progress-display-link {
+.progress-display-link,
+.progress-page .reconnecting-message {
   max-width: 820px;
   margin: 0 auto 6px;
   font-size: 13px;
