@@ -9,9 +9,26 @@ final class MidweekSchedule
 {
     public const MEETING = 'midweek';
     private const DEFAULT_MINISTRY_ITEMS = 3;
+    private const MAX_MINISTRY_ITEMS = 4;
+    // Talk types used by the OnlyT meeting feed.
+    private const FEED_MINISTRY_1 = 100;
+    private const FEED_LIVING_1 = 300;
+    private const FEED_LIVING_2 = 301;
 
-    // Parts can be removed after importing, so the ministry part count is not an option.
-    public static function build(bool $isCircuitVisit): array
+    private static function feedMinutes(?array $feedMeeting, int $talkType): ?int
+    {
+        foreach ($feedMeeting['talks'] ?? [] as $talk) {
+            if (is_array($talk) && ($talk['talkType'] ?? null) === $talkType) {
+                $minutes = $talk['minutes'] ?? null;
+                return is_int($minutes) && $minutes > 0 ? $minutes : null;
+            }
+        }
+        return null;
+    }
+
+    // Parts can be removed after importing. Durations come from the feed entry for the week when one is given;
+    // otherwise (or if it has no ministry parts) three 3-minute ministry parts are used.
+    public static function build(bool $isCircuitVisit, ?array $feedMeeting = null): array
     {
         $items = [
             self::item(1000, 'opening', 'Opening Comments', 'Treasures', 1),
@@ -20,11 +37,26 @@ final class MidweekSchedule
             self::item(1003, 'reading', 'Bible Reading', 'Treasures', 4),
         ];
 
-        for ($n = 1; $n <= self::DEFAULT_MINISTRY_ITEMS; $n++) {
-            $items[] = self::item(1999 + $n, "ministry$n", "Ministry - Item $n", 'Ministry', 3);
+        $ministry = [];
+        for ($n = 1; $n <= self::MAX_MINISTRY_ITEMS; $n++) {
+            $minutes = self::feedMinutes($feedMeeting, self::FEED_MINISTRY_1 + $n - 1);
+            if ($minutes !== null) {
+                $ministry[] = $minutes;
+            }
+        }
+        if ($ministry === []) {
+            $ministry = array_fill(0, self::DEFAULT_MINISTRY_ITEMS, 3);
+        }
+        foreach ($ministry as $index => $minutes) {
+            $n = $index + 1;
+            $items[] = self::item(1999 + $n, "ministry$n", "Ministry - Item $n", 'Ministry', $minutes);
         }
 
-        $items[] = self::item(3000, 'living1', 'Living - Part 1', 'Living', 15);
+        $items[] = self::item(3000, 'living1', 'Living - Part 1', 'Living', self::feedMinutes($feedMeeting, self::FEED_LIVING_1) ?? 15);
+        $living2 = self::feedMinutes($feedMeeting, self::FEED_LIVING_2);
+        if ($living2 !== null) {
+            $items[] = self::item(3001, 'living2', 'Living - Part 2', 'Living', $living2);
+        }
 
         if ($isCircuitVisit) {
             $items[] = self::item(6000, 'concluding', 'Concluding Comments', 'Living', 3);

@@ -105,8 +105,8 @@ export class ApiService {
     );
   }
 
-  importMidweek(options: MidweekOptions): Promise<unknown> {
-    return firstValueFrom(this.http.post(`${this.baseUrl}/schedule/midweek`, options));
+  importMidweek(options: MidweekOptions, replace = false): Promise<unknown> {
+    return firstValueFrom(this.http.post(`${this.baseUrl}/schedule/midweek`, { ...options, replace }));
   }
 
   getTimers(): Promise<TimersResponse> {

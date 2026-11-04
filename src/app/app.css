@@ -861,9 +861,13 @@ h2 {
   white-space: nowrap;
 }
 
-.reset-all-button {
-  align-self: stretch;
+.schedule-actions {
+  display: flex;
+  justify-content: space-between;
   margin: 12px 0;
+}
+
+.reset-all-button {
   padding: 8px 12px;
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -1275,7 +1279,6 @@ h2 {
   font-size: 12px;
   font-weight: 400;
 }
-
 
 .progress-row.theme-treasures .progress-title { color: var(--pp-treasures); }
 .progress-row.theme-ministry .progress-title { color: var(--pp-ministry); }

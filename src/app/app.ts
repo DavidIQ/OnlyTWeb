@@ -142,6 +142,7 @@ const SETTINGS_POLL_MS = 30000;
       (talkSelected)="selectTalk($event)"
       (talkRemoved)="removeTalk($event)"
       (resetRequested)="resetAllTimers()"
+      (reimportRequested)="reimportMidweek()"
     ></aside>
   </div>
   }
@@ -536,6 +537,16 @@ export class App implements OnInit, OnDestroy {
       return;
     }
     await this.runAction(() => this.api.resetTimers());
+    this.selectedTalkId = this.visibleTimers[0]?.talkId ?? null;
+    this.changeDetector.markForCheck();
+  }
+
+  async reimportMidweek(): Promise<void> {
+    if (this.isRunning || !window.confirm(this.t('schedule.confirmReimport'))) {
+      return;
+    }
+    const options = { isCircuitVisit: this.settings?.circuitVisit ?? false };
+    await this.runAction(() => this.api.importMidweek(options, true));
     this.selectedTalkId = this.visibleTimers[0]?.talkId ?? null;
     this.changeDetector.markForCheck();
   }

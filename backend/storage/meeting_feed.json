@@ -1,0 +1,563 @@
+[
+  {
+    "date": "2026-10-11T00:00:00",
+    "talks": [],
+    "songNumbers": [
+      55,
+      150
+    ]
+  },
+  {
+    "date": "2026-10-18T00:00:00",
+    "talks": [],
+    "songNumbers": [
+      129,
+      149
+    ]
+  },
+  {
+    "date": "2026-10-25T00:00:00",
+    "talks": [],
+    "songNumbers": [
+      106,
+      154
+    ]
+  },
+  {
+    "date": "2026-10-26T00:00:00",
+    "talks": [
+      {
+        "talkType": 100,
+        "minutes": 3,
+        "isStudentTalk": true
+      },
+      {
+        "talkType": 101,
+        "minutes": 4,
+        "isStudentTalk": true
+      },
+      {
+        "talkType": 102,
+        "minutes": 5,
+        "isStudentTalk": true
+      },
+      {
+        "talkType": 300,
+        "minutes": 15,
+        "isStudentTalk": false
+      }
+    ],
+    "songNumbers": [
+      125,
+      158,
+      54
+    ]
+  },
+  {
+    "date": "2026-11-01T00:00:00",
+    "talks": [],
+    "songNumbers": [
+      62,
+      159
+    ]
+  },
+  {
+    "date": "2026-11-02T00:00:00",
+    "talks": [
+      {
+        "talkType": 100,
+        "minutes": 3,
+        "isStudentTalk": true
+      },
+      {
+        "talkType": 101,
+        "minutes": 4,
+        "isStudentTalk": true
+      },
+      {
+        "talkType": 102,
+        "minutes": 5,
+        "isStudentTalk": true
+      },
+      {
+        "talkType": 300,
+        "minutes": 15,
+        "isStudentTalk": false
+      }
+    ],
+    "songNumbers": [
+      1,
+      44,
+      33
+    ]
+  },
+  {
+    "date": "2026-11-08T00:00:00",
+    "talks": [],
+    "songNumbers": [
+      3,
+      8
+    ]
+  },
+  {
+    "date": "2026-11-09T00:00:00",
+    "talks": [
+      {
+        "talkType": 100,
+        "minutes": 3,
+        "isStudentTalk": true
+      },
+      {
+        "talkType": 101,
+        "minutes": 4,
+        "isStudentTalk": true
+      },
+      {
+        "talkType": 102,
+        "minutes": 5,
+        "isStudentTalk": true
+      },
+      {
+        "talkType": 300,
+        "minutes": 15,
+        "isStudentTalk": false
+      }
+    ],
+    "songNumbers": [
+      98,
+      10,
+      150
+    ]
+  },
+  {
+    "date": "2026-11-15T00:00:00",
+    "talks": [],
+    "songNumbers": [
+      36,
+      88
+    ]
+  },
+  {
+    "date": "2026-11-16T00:00:00",
+    "talks": [
+      {
+        "talkType": 100,
+        "minutes": 3,
+        "isStudentTalk": true
+      },
+      {
+        "talkType": 101,
+        "minutes": 4,
+        "isStudentTalk": true
+      },
+      {
+        "talkType": 102,
+        "minutes": 5,
+        "isStudentTalk": false
+      },
+      {
+        "talkType": 300,
+        "minutes": 15,
+        "isStudentTalk": false
+      }
+    ],
+    "songNumbers": [
+      28,
+      90,
+      75
+    ]
+  },
+  {
+    "date": "2026-11-22T00:00:00",
+    "talks": [],
+    "songNumbers": [
+      84,
+      57
+    ]
+  },
+  {
+    "date": "2026-11-23T00:00:00",
+    "talks": [
+      {
+        "talkType": 100,
+        "minutes": 3,
+        "isStudentTalk": true
+      },
+      {
+        "talkType": 101,
+        "minutes": 4,
+        "isStudentTalk": true
+      },
+      {
+        "talkType": 102,
+        "minutes": 5,
+        "isStudentTalk": true
+      },
+      {
+        "talkType": 300,
+        "minutes": 15,
+        "isStudentTalk": false
+      }
+    ],
+    "songNumbers": [
+      158,
+      109,
+      74
+    ]
+  },
+  {
+    "date": "2026-11-29T00:00:00",
+    "talks": [],
+    "songNumbers": [
+      107,
+      16
+    ]
+  },
+  {
+    "date": "2026-11-30T00:00:00",
+    "talks": [
+      {
+        "talkType": 100,
+        "minutes": 3,
+        "isStudentTalk": true
+      },
+      {
+        "talkType": 101,
+        "minutes": 5,
+        "isStudentTalk": true
+      },
+      {
+        "talkType": 102,
+        "minutes": 4,
+        "isStudentTalk": true
+      },
+      {
+        "talkType": 300,
+        "minutes": 15,
+        "isStudentTalk": false
+      }
+    ],
+    "songNumbers": [
+      65,
+      63,
+      134
+    ]
+  },
+  {
+    "date": "2026-12-06T00:00:00",
+    "talks": [],
+    "songNumbers": [
+      22,
+      124
+    ]
+  },
+  {
+    "date": "2026-12-07T00:00:00",
+    "talks": [
+      {
+        "talkType": 100,
+        "minutes": 3,
+        "isStudentTalk": true
+      },
+      {
+        "talkType": 101,
+        "minutes": 4,
+        "isStudentTalk": true
+      },
+      {
+        "talkType": 102,
+        "minutes": 5,
+        "isStudentTalk": true
+      },
+      {
+        "talkType": 300,
+        "minutes": 15,
+        "isStudentTalk": false
+      }
+    ],
+    "songNumbers": [
+      71,
+      161,
+      7
+    ]
+  },
+  {
+    "date": "2026-12-13T00:00:00",
+    "talks": [],
+    "songNumbers": [
+      46,
+      139
+    ]
+  },
+  {
+    "date": "2026-12-14T00:00:00",
+    "talks": [
+      {
+        "talkType": 100,
+        "minutes": 3,
+        "isStudentTalk": true
+      },
+      {
+        "talkType": 101,
+        "minutes": 4,
+        "isStudentTalk": true
+      },
+      {
+        "talkType": 102,
+        "minutes": 5,
+        "isStudentTalk": false
+      },
+      {
+        "talkType": 300,
+        "minutes": 15,
+        "isStudentTalk": false
+      }
+    ],
+    "songNumbers": [
+      49,
+      153,
+      133
+    ]
+  },
+  {
+    "date": "2026-12-20T00:00:00",
+    "talks": [],
+    "songNumbers": [
+      143,
+      154
+    ]
+  },
+  {
+    "date": "2026-12-21T00:00:00",
+    "talks": [
+      {
+        "talkType": 100,
+        "minutes": 3,
+        "isStudentTalk": true
+      },
+      {
+        "talkType": 101,
+        "minutes": 4,
+        "isStudentTalk": true
+      },
+      {
+        "talkType": 102,
+        "minutes": 5,
+        "isStudentTalk": true
+      },
+      {
+        "talkType": 300,
+        "minutes": 15,
+        "isStudentTalk": false
+      }
+    ],
+    "songNumbers": [
+      128,
+      139,
+      154
+    ]
+  },
+  {
+    "date": "2026-12-27T00:00:00",
+    "talks": [],
+    "songNumbers": [
+      135,
+      161
+    ]
+  },
+  {
+    "date": "2026-12-28T00:00:00",
+    "talks": [
+      {
+        "talkType": 100,
+        "minutes": 3,
+        "isStudentTalk": true
+      },
+      {
+        "talkType": 101,
+        "minutes": 4,
+        "isStudentTalk": true
+      },
+      {
+        "talkType": 102,
+        "minutes": 5,
+        "isStudentTalk": true
+      },
+      {
+        "talkType": 300,
+        "minutes": 15,
+        "isStudentTalk": false
+      }
+    ],
+    "songNumbers": [
+      119,
+      60,
+      135
+    ]
+  },
+  {
+    "date": "2027-01-03T00:00:00",
+    "talks": [],
+    "songNumbers": [
+      162,
+      94
+    ]
+  },
+  {
+    "date": "2027-01-04T00:00:00",
+    "talks": [
+      {
+        "talkType": 100,
+        "minutes": 3,
+        "isStudentTalk": true
+      },
+      {
+        "talkType": 101,
+        "minutes": 4,
+        "isStudentTalk": true
+      },
+      {
+        "talkType": 102,
+        "minutes": 5,
+        "isStudentTalk": false
+      },
+      {
+        "talkType": 300,
+        "minutes": 15,
+        "isStudentTalk": false
+      }
+    ],
+    "songNumbers": [
+      83,
+      2,
+      164
+    ]
+  },
+  {
+    "date": "2027-01-10T00:00:00",
+    "talks": [],
+    "songNumbers": [
+      36,
+      159
+    ]
+  },
+  {
+    "date": "2027-01-11T00:00:00",
+    "talks": [
+      {
+        "talkType": 100,
+        "minutes": 3,
+        "isStudentTalk": true
+      },
+      {
+        "talkType": 101,
+        "minutes": 4,
+        "isStudentTalk": true
+      },
+      {
+        "talkType": 102,
+        "minutes": 5,
+        "isStudentTalk": true
+      },
+      {
+        "talkType": 300,
+        "minutes": 15,
+        "isStudentTalk": false
+      }
+    ],
+    "songNumbers": [
+      39,
+      56,
+      98
+    ]
+  },
+  {
+    "date": "2027-01-17T00:00:00",
+    "talks": [],
+    "songNumbers": [
+      103,
+      109
+    ]
+  },
+  {
+    "date": "2027-01-18T00:00:00",
+    "talks": [
+      {
+        "talkType": 100,
+        "minutes": 3,
+        "isStudentTalk": true
+      },
+      {
+        "talkType": 101,
+        "minutes": 4,
+        "isStudentTalk": true
+      },
+      {
+        "talkType": 102,
+        "minutes": 5,
+        "isStudentTalk": true
+      },
+      {
+        "talkType": 300,
+        "minutes": 15,
+        "isStudentTalk": false
+      }
+    ],
+    "songNumbers": [
+      130,
+      58,
+      159
+    ]
+  },
+  {
+    "date": "2027-01-24T00:00:00",
+    "talks": [],
+    "songNumbers": [
+      28,
+      31
+    ]
+  },
+  {
+    "date": "2027-01-25T00:00:00",
+    "talks": [
+      {
+        "talkType": 100,
+        "minutes": 2,
+        "isStudentTalk": false
+      },
+      {
+        "talkType": 101,
+        "minutes": 3,
+        "isStudentTalk": true
+      },
+      {
+        "talkType": 102,
+        "minutes": 3,
+        "isStudentTalk": true
+      },
+      {
+        "talkType": 103,
+        "minutes": 4,
+        "isStudentTalk": true
+      },
+      {
+        "talkType": 300,
+        "minutes": 15,
+        "isStudentTalk": false
+      }
+    ],
+    "songNumbers": [
+      30,
+      3,
+      94
+    ]
+  },
+  {
+    "date": "2027-01-31T00:00:00",
+    "talks": [],
+    "songNumbers": [
+      107,
+      154
+    ]
+  }
+]

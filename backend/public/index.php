@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'StateStore.php';
 require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'MidweekSchedule.php';
+require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'MeetingFeed.php';
 require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'Auth.php';
 require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'AdaptiveMode.php';
 require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'ReportMailer.php';
@@ -298,16 +299,27 @@ function handleRequest(): never
 
     if ($path === '/api/v1/schedule/midweek') {
         if ($method === 'GET') {
-            respond(['items' => MidweekSchedule::build(circuitVisitOption($_GET))]);
+            respond(['items' => MidweekSchedule::build(circuitVisitOption($_GET), MeetingFeed::currentMeeting())]);
         }
         if ($method === 'POST') {
-            $isCircuitVisit = circuitVisitOption(requestBody());
-            $imported = $store->transact(static function (array &$state) use ($isCircuitVisit): bool {
-                if (ScheduleSync::hasMeeting($state, MidweekSchedule::MEETING)) {
+            $body = requestBody();
+            $isCircuitVisit = circuitVisitOption($body);
+            $replace = ($body['replace'] ?? false) === true;
+            $feedMeeting = MeetingFeed::currentMeeting(true);
+            $imported = $store->transact(static function (array &$state) use ($isCircuitVisit, $feedMeeting, $replace): bool {
+                if ($replace) {
+                    if ($state['status']['isRunning']) {
+                        throw new ApiException(409, 'The schedule cannot be re-imported while a timer is running.', 'timer_running_edit');
+                    }
+                    $state['timerInfo'] = array_values(array_filter(
+                        $state['timerInfo'],
+                        static fn(array $item): bool => $item['meeting'] !== MidweekSchedule::MEETING
+                    ));
+                } elseif (ScheduleSync::hasMeeting($state, MidweekSchedule::MEETING)) {
                     return false;
                 }
                 $state['settings']['circuitVisit'] = $isCircuitVisit;
-                foreach (MidweekSchedule::build($isCircuitVisit) as $item) {
+                foreach (MidweekSchedule::build($isCircuitVisit, $feedMeeting) as $item) {
                     $state['timerInfo'][] = ScheduleSync::toTimer($item, MidweekSchedule::MEETING);
                 }
                 ScheduleSync::applyCircuitVisit($state);

@@ -19,11 +19,11 @@ final class AdaptiveMode
     // Seconds between the end of the previous item and the start of this one (changeover, counsel, songs).
     private const GAP_BEFORE = [
         1001 => 20, 1002 => 20, 1003 => 20,
-        2000 => 80, 2001 => 80, 2002 => 80,
+        2000 => 80, 2001 => 80, 2002 => 80, 2003 => 80,
         3000 => 200, 4000 => 20,
         7001 => 300,
     ];
-    private const ADAPTABLE = [2000, 2001, 2002, 3000, 4000, 5000, 6000, 7001, 7002];
+    private const ADAPTABLE = [2000, 2001, 2002, 3000, 3001, 4000, 5000, 6000, 7001, 7002];
 
     /** Returns the adapted duration in seconds for the talk about to start, or null if no adaptation applies. */
     public static function calculate(array $state, int $talkId, float $now): ?int
