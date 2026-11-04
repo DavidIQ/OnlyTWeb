@@ -5,6 +5,7 @@
     {
       "type": "npm",
       "script": "start",
+      "label": "Run Angular app",
       "isBackground": true,
       "problemMatcher": {
         "owner": "typescript",
@@ -12,13 +13,49 @@
         "background": {
           "activeOnStart": true,
           "beginsPattern": {
-            "regexp": "Changes detected"
+            "regexp": ".*"
           },
           "endsPattern": {
-            "regexp": "bundle generation (complete|failed)"
+            "regexp": "Local:.*http://localhost:4200"
           }
         }
       }
+    },
+    {
+      "type": "process",
+      "command": "php",
+      "args": [
+        "-S",
+        "127.0.0.1:8000",
+        "-t",
+        "backend/public",
+        "backend/public/router.php"
+      ],
+      "label": "Run PHP API",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "php",
+        "pattern": {
+          "regexp": "^$"
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": {
+            "regexp": ".*"
+          },
+          "endsPattern": {
+            "regexp": "Development Server \\(http://127\\.0\\.0\\.1:8000\\) started"
+          }
+        }
+      }
+    },
+    {
+      "label": "Run PHP API and Angular app",
+      "dependsOn": [
+        "Run PHP API",
+        "Run Angular app"
+      ],
+      "dependsOrder": "parallel"
     },
     {
       "type": "npm",
