@@ -88,6 +88,16 @@ The timer API adds an `elapsedSeconds` field while retaining the existing proper
 
 The client is static files and the API is PHP, so any Linux host with a web server (nginx or Apache), PHP-FPM 8.1+ and the `pdo_sqlite` and `dom` extensions works. For the email report, configure PHP mail (for example a local Postfix/sendmail) and make sure the host may send mail as `MeetingReport@your-domain`. Use HTTPS: the PIN is sent to the server. The examples serve the app from its own folder, `https://onlyt.example.org/onlyt/` (the folder name is up to you; use it consistently as below).
 
+### Build with generated bundles under `/onlyt/app/`
+
+Run the **Build client for upload** VS Code task, or run:
+
+```powershell
+npm run build:upload
+```
+
+The upload package is created in `dist/upload`. Its root contains the files to place directly in `/onlyt/` (`index.html`, public assets, and the `app/` bundle directory), alongside a separate `backend/` directory. Copy the root files and `app/` to the directory served at `/onlyt/`. Copy `backend/` outside the web root (for example to `/var/www/onlyt/backend`) so its PHP source and configuration cannot be downloaded. The build uses `/onlyt/` as the application base path and `/onlyt/app/` for generated bundle URLs. Copy `backend/config.example.php` to `backend/config.php` and set a new PIN before deployment. Configure the web server to route `/onlyt/api` to `backend/public/index.php`. The package excludes local storage data; PHP must be able to create and write `backend/storage`. The subfolder-only deployment described below is an alternative layout and uses its own build command.
+
 1. **Configure.** Set a new PIN in `backend/config.php`. Set the PHP time zone to the congregation's local time (`date.timezone = America/New_York` in `php.ini` or the pool config), because adaptive mode compares the meeting start time with the server clock.
 2. **Build the client** on your computer:
 

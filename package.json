@@ -5,6 +5,7 @@
     "ng": "ng",
     "start": "ng serve --proxy-config proxy.conf.json",
     "build": "ng build",
+    "build:upload": "node scripts/build-upload.mjs",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
