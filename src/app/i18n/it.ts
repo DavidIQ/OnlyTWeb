@@ -5,6 +5,7 @@ export const it: Translations = {
   'top.console': 'CONSOLE OPERATORE',
   'common.retry': 'Riprova',
   'common.dismiss': 'Chiudi',
+  'connection.reconnecting': 'Riconnessione',
   'common.cancel': 'Annulla',
   'common.save': 'Salva',
   'settings.saved': 'Salvato con successo',

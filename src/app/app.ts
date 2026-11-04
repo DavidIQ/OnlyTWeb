@@ -34,9 +34,11 @@ const COUNSEL_ALLOWED_SECONDS = 60;
     [closing]="isClosing"
     [seconds]="displayedSeconds"
     [clockText]="clockText"
+    [reconnecting]="reconnecting"
+    [dots]="reconnectDotsText"
   ></main>
 } @else if (isProgressMode) {
-  <main app-progress-page [meeting]="activeMeeting" [rows]="progressRows"></main>
+  <main app-progress-page [meeting]="activeMeeting" [rows]="progressRows" [reconnecting]="reconnecting" [dots]="reconnectDotsText"></main>
 } @else {
 <main class="shell" [class.shell-wide]="showReport">
   <header class="topbar">
@@ -186,10 +188,30 @@ export class App implements OnInit, OnDestroy {
   pinError: TranslationKey | '' = '';
   pinBusy = false;
   savingSettings = false;
+  reconnecting = false;
+  reconnectDots = 0;
   private toastHandle: number | undefined;
   private refreshHandle: number | undefined;
   private clockHandle: number | undefined;
+  private reconnectHandle: number | undefined;
+  private refreshInProgress = false;
+  private authCheckInProgress = false;
+  private retryDelayMs = 1000;
   private previewRequest = 0;
+  private readonly onlineListener = (): void => {
+    if (!this.isDisplayMode && !this.isProgressMode && this.authenticated === null) {
+      void this.checkAuth();
+    }
+    void this.refresh();
+  };
+  private readonly offlineListener = (): void => {
+    this.setReconnecting(true);
+    if (this.refreshHandle !== undefined) {
+      window.clearTimeout(this.refreshHandle);
+      this.refreshHandle = undefined;
+    }
+    this.changeDetector.markForCheck();
+  };
   private readonly storageListener = (): void => {
     if (!this.isProgressMode && this.i18n.syncFromStorage()) {
       this.changeDetector.markForCheck();
@@ -209,13 +231,17 @@ export class App implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     window.addEventListener('storage', this.storageListener);
+    window.addEventListener('online', this.onlineListener);
+    window.addEventListener('offline', this.offlineListener);
+    if (!navigator.onLine) {
+      this.setReconnecting(true);
+    }
     if (this.isDisplayMode || this.isProgressMode) {
       this.authenticated = true;
     } else {
       void this.checkAuth();
     }
     void this.refresh();
-    this.refreshHandle = window.setInterval(() => void this.refresh(), 1000);
     if (this.isDisplayMode) {
       this.clockHandle = window.setInterval(() => {
         this.currentTime = new Date();
@@ -226,11 +252,16 @@ export class App implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     window.removeEventListener('storage', this.storageListener);
+    window.removeEventListener('online', this.onlineListener);
+    window.removeEventListener('offline', this.offlineListener);
     if (this.refreshHandle !== undefined) {
-      window.clearInterval(this.refreshHandle);
+      window.clearTimeout(this.refreshHandle);
     }
     if (this.clockHandle !== undefined) {
       window.clearInterval(this.clockHandle);
+    }
+    if (this.reconnectHandle !== undefined) {
+      window.clearInterval(this.reconnectHandle);
     }
   }
 
@@ -298,15 +329,26 @@ export class App implements OnInit, OnDestroy {
   }
 
   async checkAuth(): Promise<void> {
+    if (this.authCheckInProgress) {
+      return;
+    }
+    this.authCheckInProgress = true;
     try {
       this.authenticated = (await this.api.getAuth()).authenticated;
-    } catch {
-      this.authenticated = false;
+    } catch (error) {
+      if (error instanceof HttpErrorResponse && error.status !== 0) {
+        this.authenticated = false;
+      }
     }
     if (this.authenticated) {
       void this.loadPreview();
     }
+    this.authCheckInProgress = false;
     this.changeDetector.markForCheck();
+  }
+
+  get reconnectDotsText(): string {
+    return '.'.repeat(this.reconnectDots);
   }
 
   async submitPin(pin: string): Promise<void> {
@@ -651,6 +693,15 @@ export class App implements OnInit, OnDestroy {
   }
 
   async refresh(): Promise<void> {
+    if (this.refreshInProgress) {
+      return;
+    }
+    this.refreshInProgress = true;
+    if (this.refreshHandle !== undefined) {
+      window.clearTimeout(this.refreshHandle);
+      this.refreshHandle = undefined;
+    }
+    let nextRefreshDelay = 1000;
     try {
       const [timers, settings] = await Promise.all([
         this.api.getTimers(),
@@ -677,11 +728,26 @@ export class App implements OnInit, OnDestroy {
       }
 
       this.errorMessage = '';
+      this.setReconnecting(false);
+      this.retryDelayMs = 1000;
+      if (!this.isDisplayMode && !this.isProgressMode && this.authenticated === null) {
+        void this.checkAuth();
+      }
     } catch (error) {
       this.errorMessage = this.errorText(error);
+      this.setReconnecting(true);
+      nextRefreshDelay = this.retryDelayMs;
+      this.retryDelayMs = Math.min(this.retryDelayMs * 2, 30000);
     } finally {
       this.loading = false;
+      this.refreshInProgress = false;
       this.changeDetector.markForCheck();
+      if (navigator.onLine) {
+        this.refreshHandle = window.setTimeout(() => {
+          this.refreshHandle = undefined;
+          void this.refresh();
+        }, nextRefreshDelay);
+      }
     }
   }
 
@@ -760,5 +826,25 @@ export class App implements OnInit, OnDestroy {
       }
     }
     return 'error.generic';
+  }
+
+  private setReconnecting(reconnecting: boolean): void {
+    if (this.reconnecting === reconnecting) {
+      return;
+    }
+    this.reconnecting = reconnecting;
+    if (reconnecting) {
+      this.reconnectDots = 0;
+      this.reconnectHandle = window.setInterval(() => {
+        this.reconnectDots = (this.reconnectDots + 1) % 4;
+        this.changeDetector.markForCheck();
+      }, 1000);
+    } else {
+      if (this.reconnectHandle !== undefined) {
+        window.clearInterval(this.reconnectHandle);
+        this.reconnectHandle = undefined;
+      }
+      this.reconnectDots = 0;
+    }
   }
 }

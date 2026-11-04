@@ -7,6 +7,12 @@ import { MeetingKind, Translated, meetingTitleKey } from './shared';
   selector: 'main[app-progress-page]',
   imports: [LanguagePicker, ProgressList],
   template: `
+@if (reconnecting()) {
+  <div class="reconnecting-message" role="status" aria-live="polite">
+    {{ t('connection.reconnecting') }}<span aria-hidden="true">{{ dots() }}</span>
+  </div>
+}
+
 <div class="progress-display-link">
   <a href="display">{{ t('progress.back') }}</a>
 </div>
@@ -25,6 +31,8 @@ import { MeetingKind, Translated, meetingTitleKey } from './shared';
 export class ProgressPage extends Translated {
   readonly meeting = input.required<MeetingKind>();
   readonly rows = input.required<ProgressRow[]>();
+  readonly reconnecting = input(false);
+  readonly dots = input.required<string>();
 
   protected readonly meetingTitleKey = meetingTitleKey;
 }

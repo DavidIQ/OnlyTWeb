@@ -3,6 +3,7 @@ export const en = {
   'top.console': 'OPERATOR CONSOLE',
   'common.retry': 'Retry',
   'common.dismiss': 'Dismiss',
+  'connection.reconnecting': 'Reconnecting',
   'common.cancel': 'Cancel',
   'common.save': 'Save',
   'settings.saved': 'Saved successfully',

@@ -1071,6 +1071,13 @@ h2 {
   position: relative;
 }
 
+.display-mode .reconnecting-message {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  color: #aab0c0;
+}
+
 .display-progress-link {
   position: absolute;
   right: 20px;
