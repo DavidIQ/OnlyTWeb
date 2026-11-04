@@ -24,13 +24,7 @@
     {
       "type": "process",
       "command": "php",
-      "args": [
-        "-S",
-        "127.0.0.1:8000",
-        "-t",
-        "backend/public",
-        "backend/public/router.php"
-      ],
+      "args": ["-S", "127.0.0.1:8000", "-t", "backend/public", "backend/public/router.php"],
       "label": "Run PHP API",
       "isBackground": true,
       "problemMatcher": {
@@ -51,11 +45,9 @@
     },
     {
       "label": "Run PHP API and Angular app",
-      "dependsOn": [
-        "Run PHP API",
-        "Run Angular app"
-      ],
-      "dependsOrder": "parallel"
+      "dependsOn": ["Run PHP API", "Run Angular app"],
+      "dependsOrder": "parallel",
+      "problemMatcher": []
     },
     {
       "type": "npm",
