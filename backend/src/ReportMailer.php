@@ -87,7 +87,7 @@ final class ReportMailer
         $body .= "--$boundary--\r\n";
 
         $headers = [
-            'From' => self::senderAddress(),
+            'From' => '"OnlyT Web" <' . self::senderAddress() . '>',
             'MIME-Version' => '1.0',
             'Content-Type' => "multipart/related; boundary=\"$boundary\"",
         ];
