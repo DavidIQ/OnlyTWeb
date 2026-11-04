@@ -63,7 +63,7 @@ The PHP API retains the OnlyT versioned routes and timer response fields:
 - `POST /api/v1/schedule/midweek` — seed the mid-week schedule (`{isCircuitVisit}`); no-op if already present
 - `DELETE /api/v1/schedule/talks/{talkId}` — remove a mid-week part (not the last one, not while a timer runs)
 - `GET /api/v1/report` — the sender address and saved recipients. `POST /api/v1/report/email` — sends the HTML progress report (`recipients`, `subject`, `html`, `images`) with the sender name `OnlyT Web` and address `MeetingReport@<host>` via PHP `mail()` and, on success, saves the recipients. The HTML is sanitised server-side. Delivery requires a working mail setup on the server (`sendmail_path` or SMTP in `php.ini`); otherwise the API returns `mail_failed`.
-- `GET /api/v1/settings`, `PUT /api/v1/settings` — also hold the meeting settings: `circuitVisit`, `midweekStart`/`midweekEnd`, `weekendDay` (0 = Sunday), `weekendStart`/`weekendEnd` (`HH:MM`), `adaptiveMode` (`none`, `oneWay`, `twoWay`). All are stored in SQLite.
+- `GET /api/v1/settings`, `PUT /api/v1/settings` — also hold the meeting settings: `circuitVisit`, `midweekStart`/`midweekEnd`, `weekendDay` (0 = Sunday), `weekendStart`/`weekendEnd` (`HH:MM`), `adaptiveMode` (`none`, `oneWay`, `twoWay`), and `congregationLanguage` (`en`, `es`, `pt`, `fr`, `it`). All are stored in SQLite.
 
 The weekend schedule (Public Talk and Watchtower Study) is built in and needs no import. When the Circuit Overseer visits, the Watchtower Study is shortened to 30 minutes and a 30-minute concluding talk is added; on the mid-week meeting the congregation Bible study is replaced by the Circuit Overseer's service talk, after the concluding comments. Part durations can be adjusted for either meeting.
 Error responses include a machine-readable `code` used by the client for translated messages.
@@ -76,7 +76,7 @@ The operator console is protected by a 4-digit PIN set in `backend/config.php`; 
 
 - The meeting settings panel configures mid-week and weekend times, the weekend day, and adaptive timing. The Circuit Overseer option is also available on the main timer screen.
 - On first run, when no mid-week schedule is stored, the app offers a schedule preview and import step before opening the console.
-- The language picker translates the UI and schedule titles; the selected language is stored in the browser.
+- The header language picker translates the current browser's operator UI. The saved congregation language controls timer and report content; the progress page defaults to it and can be changed locally for that tab.
 - `/display` shows the browser-formatted clock while idle and the running timer otherwise. The clock omits AM/PM, and a link opens `/progress`.
 - `/progress` ("Meeting Progress") lists all parts in schedule order. Completed parts show actual durations, start/end times, and early/late variance; the running part updates live and upcoming parts are dimmed. Mid-week parts are grouped under section headings. Both routes require the web server to serve `index.html` for those paths.
 - Adaptive timing evaluates schedule offsets when a segment starts. More than 15 seconds ahead or behind (up to 15 minutes) is distributed proportionally across eligible remaining parts; one-way mode shortens parts, while two-way mode may also lengthen them. The configured start time and typical changeover gaps form an approximate planned timeline. The server's PHP time zone is used for the clock.

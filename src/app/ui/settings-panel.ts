@@ -1,7 +1,7 @@
 import { Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MeetingSettingsChanges } from '../services/api.service';
-import { TranslationKey } from '../i18n/i18n';
+import { LANGUAGES, TranslationKey } from '../i18n/i18n';
 import { Translated } from './shared';
 
 @Component({
@@ -51,6 +51,16 @@ import { Translated } from './shared';
       </select>
     </label>
   </fieldset>
+  <fieldset>
+    <legend>{{ t('settings.congregationLanguage') }}</legend>
+    <label class="setup-field">
+      <select [(ngModel)]="d.congregationLanguage">
+        @for (language of languages; track language.code) {
+          <option [value]="language.code">{{ language.name }}</option>
+        }
+      </select>
+    </label>
+  </fieldset>
 </div>
 <div class="settings-actions">
   @if (error(); as key) {
@@ -68,6 +78,7 @@ export class SettingsPanel extends Translated {
   readonly saving = input(false);
   readonly cancelled = output<void>();
   readonly saved = output<void>();
+  protected readonly languages = LANGUAGES;
 
   // A getter rather than computed(): the language is not a signal.
   protected get weekdayOptions(): { value: number; name: string }[] {

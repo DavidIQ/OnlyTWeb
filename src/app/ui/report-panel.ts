@@ -1,6 +1,6 @@
 import { Component, input, model, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { LANGUAGES, LanguageCode, TranslationKey } from '../i18n/i18n';
+import { TranslationKey } from '../i18n/i18n';
 import { ProgressList, ProgressRow } from './progress-list';
 import { MeetingKind, Translated } from './shared';
 
@@ -9,14 +9,6 @@ import { MeetingKind, Translated } from './shared';
   imports: [FormsModule, ProgressList],
   template: `
 <h2>{{ t('report.title') }}</h2>
-<label class="setup-field report-language">
-  <span>{{ t('report.language') }}</span>
-  <select [ngModel]="reportLanguage()" (ngModelChange)="reportLanguageChange.emit($event)">
-    @for (language of languages; track language.code) {
-      <option [value]="language.code">{{ language.name }}</option>
-    }
-  </select>
-</label>
 <div class="report-from">
   <span class="report-label">{{ t('report.from') }}</span>
   <span class="report-from-address">{{ from() }}</span>
@@ -59,12 +51,8 @@ export class ReportPanel extends Translated {
   readonly sending = input(false);
   readonly meeting = input.required<MeetingKind>();
   readonly rows = input.required<ProgressRow[]>();
-  readonly reportLanguage = input.required<LanguageCode>();
   readonly reportTitle = input.required<string>();
   readonly cancelled = output<void>();
   readonly recipientsCleared = output<void>();
-  readonly reportLanguageChange = output<LanguageCode>();
   readonly sendRequested = output<HTMLElement>();
-
-  protected readonly languages = LANGUAGES;
 }

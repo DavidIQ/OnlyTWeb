@@ -1,6 +1,7 @@
 import { Component, computed, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SchedulePreviewItem } from '../services/api.service';
+import { LanguageCode } from '../i18n/i18n';
 import { Translated } from './shared';
 
 @Component({
@@ -43,8 +44,8 @@ import { Translated } from './shared';
           <li class="setup-row">
             <span class="schedule-index">{{ (index + 1).toString().padStart(2, '0') }}</span>
             <span class="schedule-content">
-              <span class="schedule-title">{{ i18n.talkTitle(item) }}</span>
-              <span class="schedule-section">{{ i18n.sectionName(item.meetingSectionNameInternal) }}</span>
+              <span class="schedule-title">{{ i18n.talkTitleFor(language(), item) }}</span>
+              <span class="schedule-section">{{ i18n.sectionNameFor(language(), item.meetingSectionNameInternal) }}</span>
             </span>
             <span class="schedule-duration">{{ t('setup.minutes', { n: item.originalDurationSecs / 60 }) }}</span>
           </li>
@@ -60,6 +61,7 @@ import { Translated } from './shared';
   host: { class: 'setup-card' },
 })
 export class SetupCard extends Translated {
+  readonly language = input.required<LanguageCode>();
   readonly circuitVisit = input.required<boolean>();
   readonly items = input.required<SchedulePreviewItem[]>();
   readonly previewFailed = input.required<boolean>();

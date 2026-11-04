@@ -230,11 +230,11 @@ function handleRequest(): never
                     }
                     $state['settings']['weekendDay'] = $body['weekendDay'];
                 }
-                if (array_key_exists('reportLanguage', $body)) {
-                    if (!in_array($body['reportLanguage'], ['en', 'es', 'pt', 'fr', 'it'], true)) {
-                        throw new ApiException(422, 'reportLanguage must be en, es, pt, fr or it.', 'invalid_value');
+                if (array_key_exists('congregationLanguage', $body)) {
+                    if (!in_array($body['congregationLanguage'], ['en', 'es', 'pt', 'fr', 'it'], true)) {
+                        throw new ApiException(422, 'congregationLanguage must be en, es, pt, fr or it.', 'invalid_value');
                     }
-                    $state['settings']['reportLanguage'] = $body['reportLanguage'];
+                    $state['settings']['congregationLanguage'] = $body['congregationLanguage'];
                 }
                 if (array_key_exists('adaptiveMode', $body)) {
                     if (!in_array($body['adaptiveMode'], AdaptiveMode::MODES, true)) {

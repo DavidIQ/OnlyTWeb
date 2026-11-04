@@ -28,17 +28,6 @@ export class I18nService {
     document.documentElement.lang = code;
   }
 
-  // Applies a language chosen in another window (e.g. the operator console driving the display).
-  syncFromStorage(): boolean {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored === null || !this.isSupported(stored) || stored === this.current) {
-      return false;
-    }
-    this.current = stored;
-    document.documentElement.lang = stored;
-    return true;
-  }
-
   t(key: TranslationKey, params?: Record<string, string | number>): string {
     return this.tFor(this.current, key, params);
   }

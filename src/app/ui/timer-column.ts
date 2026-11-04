@@ -1,6 +1,7 @@
 import { Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SettingsData, TimerInfo } from '../services/api.service';
+import { LanguageCode } from '../i18n/i18n';
 import { Translated, formatTimer } from './shared';
 
 @Component({
@@ -20,7 +21,7 @@ import { Translated, formatTimer } from './shared';
     </label>
   </div>
   <div class="timer-card-top">
-    <label class="eyebrow" for="talk-select">{{ running() ? t('timer.nowTiming') : t('timer.selectSegment') }}</label>
+    <label class="eyebrow" for="talk-select">{{ i18n.tFor(language(), running() ? 'timer.nowTiming' : 'timer.selectSegment') }}</label>
   </div>
 
   <select
@@ -31,14 +32,14 @@ import { Translated, formatTimer } from './shared';
     [disabled]="running() || !timers().length"
   >
     @for (talk of timers(); track trackTalk($index, talk)) {
-      <option [ngValue]="talk.talkId">{{ i18n.talkTitle(talk) }}</option>
+      <option [ngValue]="talk.talkId">{{ i18n.talkTitleFor(language(), talk) }}</option>
     }
   </select>
 
   <div class="timer-face" aria-live="polite">
     <span class="timer-value">{{ formatTimer(displayedSeconds()) }}</span>
     <span class="timer-caption">
-      {{ overtime() ? t('timer.overtime') : selectedTalk()?.countUp ? t('timer.elapsed') : t('timer.remaining') }}
+      {{ i18n.tFor(language(), overtime() ? 'timer.overtime' : selectedTalk()?.countUp ? 'timer.elapsed' : 'timer.remaining') }}
     </span>
   </div>
 
@@ -48,14 +49,14 @@ import { Translated, formatTimer } from './shared';
     [attr.aria-valuenow]="progressPercent()"
     aria-valuemin="0"
     aria-valuemax="100"
-    [attr.aria-label]="formatTimer(elapsedSeconds()) + ' ' + t('timer.elapsedLabel')"
+    [attr.aria-label]="formatTimer(elapsedSeconds()) + ' ' + i18n.tFor(language(), 'timer.elapsedLabel')"
   >
     <div class="progress-fill" [style.width.%]="progressPercent()"></div>
   </div>
 
   <div class="timer-details">
-    <span>{{ t('timer.planned') }} <strong>{{ formatTimer(durationSeconds()) }}</strong></span>
-    <span>{{ selectedTalk() ? i18n.sectionName(selectedTalk()!.meetingSectionNameInternal) : t('timer.meetingTimer') }}</span>
+    <span>{{ i18n.tFor(language(), 'timer.planned') }} <strong>{{ formatTimer(durationSeconds()) }}</strong></span>
+    <span>{{ selectedTalk() ? i18n.sectionNameFor(language(), selectedTalk()!.meetingSectionNameInternal) : i18n.tFor(language(), 'timer.meetingTimer') }}</span>
   </div>
 
   <div class="primary-controls">
@@ -121,6 +122,7 @@ import { Translated, formatTimer } from './shared';
   host: { class: 'timer-column' },
 })
 export class TimerColumn extends Translated {
+  readonly language = input.required<LanguageCode>();
   readonly timers = input.required<TimerInfo[]>();
   readonly selectedTalk = input<TimerInfo | undefined>();
   readonly selectedTalkId = input<number | null>(null);

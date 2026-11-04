@@ -41,7 +41,7 @@ export interface SettingsData {
   countUpByDefault: boolean;
   allowCountUpToggle: boolean;
   circuitVisit: boolean;
-  reportLanguage: 'en' | 'es' | 'pt' | 'fr' | 'it';
+  congregationLanguage: 'en' | 'es' | 'pt' | 'fr' | 'it';
   midweekStart: string;
   midweekEnd: string;
   weekendDay: number;
@@ -51,7 +51,7 @@ export interface SettingsData {
 }
 
 export type MeetingSettingsChanges = Partial<
-  Pick<SettingsData, 'circuitVisit' | 'reportLanguage' | 'midweekStart' | 'midweekEnd' | 'weekendDay' | 'weekendStart' | 'weekendEnd' | 'adaptiveMode'>
+  Pick<SettingsData, 'circuitVisit' | 'congregationLanguage' | 'midweekStart' | 'midweekEnd' | 'weekendDay' | 'weekendStart' | 'weekendEnd' | 'adaptiveMode'>
 >;
 
 export interface ReportInfo {

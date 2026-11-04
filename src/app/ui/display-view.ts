@@ -1,4 +1,5 @@
 import { Component, input } from '@angular/core';
+import { LanguageCode } from '../i18n/i18n';
 import { Translated, formatTimer } from './shared';
 
 @Component({
@@ -17,10 +18,10 @@ import { Translated, formatTimer } from './shared';
 </div>
 @if (reconnecting()) {
   <div class="reconnecting-message" role="status" aria-live="polite">
-    {{ t('connection.reconnecting') }}<span aria-hidden="true">{{ dots() }}</span>
+    {{ i18n.tFor(language(), 'connection.reconnecting') }}<span aria-hidden="true">{{ dots() }}</span>
   </div>
 }
-<a class="display-progress-link" href="progress">{{ t('progress.link') }}</a>
+<a class="display-progress-link" href="progress">{{ i18n.tFor(language(), 'progress.link') }}</a>
 `,
   host: {
     class: 'display-mode',
@@ -37,6 +38,7 @@ export class DisplayView extends Translated {
   readonly clockText = input.required<string>();
   readonly clockPeriod = input.required<string>();
   readonly clockDate = input.required<string>();
+  readonly language = input.required<LanguageCode>();
   readonly reconnecting = input(false);
   readonly dots = input.required<string>();
 

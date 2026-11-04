@@ -39,11 +39,12 @@ const SETTINGS_POLL_MS = 30000;
     [clockText]="clockText"
     [clockPeriod]="clockPeriod"
     [clockDate]="clockDate"
+    [language]="congregationLanguage"
     [reconnecting]="reconnecting"
     [dots]="reconnectDotsText"
   ></main>
 } @else if (isProgressMode) {
-  <main app-progress-page [meeting]="activeMeeting" [rows]="progressRows" [reconnecting]="reconnecting" [dots]="reconnectDotsText"></main>
+  <main app-progress-page [meeting]="activeMeeting" [rows]="progressRows" [language]="progressLanguage" [reconnecting]="reconnecting" [dots]="reconnectDotsText" (languageChange)="progressLanguageOverride = $event"></main>
 } @else {
 <main class="shell" [class.shell-wide]="showReport">
   <header class="topbar">
@@ -78,6 +79,7 @@ const SETTINGS_POLL_MS = 30000;
       app-setup-card
       [circuitVisit]="setupOptions.isCircuitVisit"
       [items]="previewItems"
+      [language]="congregationLanguage"
       [previewFailed]="previewFailed"
       [importing]="importing"
       (circuitVisitChange)="setupOptions.isCircuitVisit = $event; loadPreview()"
@@ -105,11 +107,9 @@ const SETTINGS_POLL_MS = 30000;
       [sending]="sendingReport"
       [meeting]="activeMeeting"
       [rows]="reportRows"
-      [reportLanguage]="reportLanguage"
       [reportTitle]="reportTitle"
       (cancelled)="closeReport()"
       (recipientsCleared)="clearRecipients()"
-      (reportLanguageChange)="updateSetting({ reportLanguage: $event })"
       (sendRequested)="sendReport($event)"
     ></section>
   } @else {
@@ -120,6 +120,7 @@ const SETTINGS_POLL_MS = 30000;
       [selectedTalk]="selectedTalk"
       [selectedTalkId]="selectedTalkId"
       [settings]="settings"
+      [language]="congregationLanguage"
       [loading]="loading"
       [running]="isRunning"
       [overtime]="isOvertime"
@@ -140,6 +141,7 @@ const SETTINGS_POLL_MS = 30000;
     <aside
       app-schedule-card
       [meeting]="activeMeeting"
+      [language]="congregationLanguage"
       [meetingTimes]="meetingTimes"
       [timers]="visibleTimers"
       [selectedTalkId]="selectedTalkId"
@@ -188,20 +190,24 @@ export class App implements OnInit, OnDestroy {
   showReport = false;
   reportFrom = '';
   reportRecipients = '';
+  get congregationLanguage(): LanguageCode {
+    return this.settings?.congregationLanguage ?? 'en';
+  }
+  get progressLanguage(): LanguageCode {
+    return this.progressLanguageOverride ?? this.congregationLanguage;
+  }
   get reportSubject(): string {
-    const language = this.reportLanguage;
+    const language = this.congregationLanguage;
     return `${this.i18n.tFor(language, 'report.subjectText')}: ${new Date().toLocaleDateString(language, { dateStyle: 'long' })}`;
   }
-  get reportLanguage(): LanguageCode {
-    return this.settings?.reportLanguage ?? this.i18n.language;
-  }
   get reportTitle(): string {
-    return this.i18n.tFor(this.reportLanguage, this.activeMeeting === 'weekend' ? 'progress.titleWeekend' : 'progress.titleMidweek');
+    return this.i18n.tFor(this.congregationLanguage, this.activeMeeting === 'weekend' ? 'progress.titleWeekend' : 'progress.titleMidweek');
   }
   get reportRows(): ProgressRow[] {
-    return this.buildProgressRows(this.reportLanguage);
+    return this.progressRows;
   }
   reportError: TranslationKey | '' = '';
+  progressLanguageOverride: LanguageCode | null = null;
   sendingReport = false;
   authenticated: boolean | null = null;
   pinError: TranslationKey | '' = '';
@@ -239,12 +245,6 @@ export class App implements OnInit, OnDestroy {
     }
     this.changeDetector.markForCheck();
   };
-  private readonly storageListener = (): void => {
-    if (!this.isProgressMode && this.i18n.syncFromStorage()) {
-      this.changeDetector.markForCheck();
-    }
-  };
-
   constructor(
     private readonly api: ApiService,
     private readonly changeDetector: ChangeDetectorRef,
@@ -257,7 +257,6 @@ export class App implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    window.addEventListener('storage', this.storageListener);
     window.addEventListener('online', this.onlineListener);
     window.addEventListener('offline', this.offlineListener);
     document.addEventListener('visibilitychange', this.visibilityListener);
@@ -282,7 +281,6 @@ export class App implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    window.removeEventListener('storage', this.storageListener);
     window.removeEventListener('online', this.onlineListener);
     window.removeEventListener('offline', this.offlineListener);
     document.removeEventListener('visibilitychange', this.visibilityListener);
@@ -325,15 +323,15 @@ export class App implements OnInit, OnDestroy {
   }
 
   get clockText(): string {
-    return this.formatClock(this.currentTime.getTime() / 1000, false);
+    return this.formatClock(this.currentTime.getTime() / 1000, false, this.congregationLanguage);
   }
 
   get clockDate(): string {
-    return new Intl.DateTimeFormat(this.i18n.language, { dateStyle: 'full' }).format(this.currentTime);
+    return new Intl.DateTimeFormat(this.congregationLanguage, { dateStyle: 'full' }).format(this.currentTime);
   }
 
   get clockPeriod(): string {
-    return new Intl.DateTimeFormat(this.i18n.language, {
+    return new Intl.DateTimeFormat(this.congregationLanguage, {
       hour: 'numeric',
       hour12: true,
     })
@@ -370,7 +368,7 @@ export class App implements OnInit, OnDestroy {
     const weekend = this.activeMeeting === 'weekend';
     const start = weekend ? this.settings.weekendStart : this.settings.midweekStart;
     const end = weekend ? this.settings.weekendEnd : this.settings.midweekEnd;
-    return `${this.formatClockTime(start)} – ${this.formatClockTime(end)}`;
+    return `${this.formatClockTime(start, this.congregationLanguage)} – ${this.formatClockTime(end, this.congregationLanguage)}`;
   }
 
   async checkAuth(): Promise<void> {
@@ -418,8 +416,8 @@ export class App implements OnInit, OnDestroy {
     if (!this.settings) {
       return;
     }
-    const { midweekStart, midweekEnd, weekendDay, weekendStart, weekendEnd, adaptiveMode } = this.settings;
-    this.settingsDraft = { midweekStart, midweekEnd, weekendDay, weekendStart, weekendEnd, adaptiveMode };
+    const { midweekStart, midweekEnd, weekendDay, weekendStart, weekendEnd, adaptiveMode, congregationLanguage } = this.settings;
+    this.settingsDraft = { midweekStart, midweekEnd, weekendDay, weekendStart, weekendEnd, adaptiveMode, congregationLanguage };
     this.settingsError = '';
     this.showSettings = true;
   }
@@ -579,16 +577,16 @@ export class App implements OnInit, OnDestroy {
     this.changeDetector.markForCheck();
   }
 
-  private formatClockTime(time: string): string {
+  private formatClockTime(time: string, language: LanguageCode): string {
     const [hours, minutes] = time.split(':').map(Number);
-    return new Intl.DateTimeFormat(undefined, { timeStyle: 'short' }).format(new Date(2024, 0, 1, hours, minutes));
+    return new Intl.DateTimeFormat(language, { timeStyle: 'short' }).format(new Date(2024, 0, 1, hours, minutes));
   }
 
   // Mirrors the Windows timing report, but lists every part of the meeting in schedule order:
   // finished parts show their actual time, the running part ticks live, and the rest show their
   // planned length. Counsel time is inferred from the gap after each finished student talk.
   get progressRows(): ProgressRow[] {
-    return this.buildProgressRows(this.i18n.language);
+    return this.buildProgressRows(this.progressLanguage);
   }
 
   private buildProgressRows(language: LanguageCode): ProgressRow[] {

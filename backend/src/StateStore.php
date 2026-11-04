@@ -112,12 +112,16 @@ final class StateStore
             'weekend_start' => "TEXT NOT NULL DEFAULT '10:00'",
             'weekend_end' => "TEXT NOT NULL DEFAULT '11:45'",
             'adaptive_mode' => "TEXT NOT NULL DEFAULT 'none'",
-            'report_language' => "TEXT NOT NULL DEFAULT 'en'",
+            'congregation_language' => "TEXT NOT NULL DEFAULT 'en'",
         ];
+        $hadCongregationLanguage = in_array('congregation_language', $settingsColumns, true);
         foreach ($addedSettings as $column => $definition) {
             if (!in_array($column, $settingsColumns, true)) {
                 $this->database->exec("ALTER TABLE app_settings ADD COLUMN $column $definition");
             }
+        }
+        if (!$hadCongregationLanguage && in_array('report_language', $settingsColumns, true)) {
+            $this->database->exec('UPDATE app_settings SET congregation_language = report_language WHERE id = 1');
         }
         $this->database->exec(
             'CREATE TABLE IF NOT EXISTS report_recipients (
@@ -162,7 +166,7 @@ final class StateStore
                 'countUpByDefault' => (bool)$settings['count_up_by_default'],
                 'allowCountUpToggle' => (bool)$settings['allow_count_up_toggle'],
                 'circuitVisit' => (bool)$settings['circuit_visit'],
-                'reportLanguage' => $settings['report_language'],
+                'congregationLanguage' => $settings['congregation_language'],
                 'midweekStart' => $settings['midweek_start'],
                 'midweekEnd' => $settings['midweek_end'],
                 'weekendDay' => (int)$settings['weekend_day'],
@@ -215,7 +219,7 @@ final class StateStore
              SET count_up_by_default = :count_up, allow_count_up_toggle = :allow_toggle,
                  circuit_visit = :circuit_visit, midweek_start = :midweek_start, midweek_end = :midweek_end,
                  weekend_day = :weekend_day, weekend_start = :weekend_start, weekend_end = :weekend_end,
-                 adaptive_mode = :adaptive_mode, report_language = :report_language
+                 adaptive_mode = :adaptive_mode, congregation_language = :congregation_language
              WHERE id = 1'
         );
         $settings->execute([
@@ -228,7 +232,7 @@ final class StateStore
             'weekend_start' => $state['settings']['weekendStart'],
             'weekend_end' => $state['settings']['weekendEnd'],
             'adaptive_mode' => $state['settings']['adaptiveMode'],
-            'report_language' => $state['settings']['reportLanguage'],
+            'congregation_language' => $state['settings']['congregationLanguage'],
         ]);
 
         $status = $this->database->prepare(

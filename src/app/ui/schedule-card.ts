@@ -1,5 +1,6 @@
 import { Component, input, output } from '@angular/core';
 import { TimerInfo } from '../services/api.service';
+import { LanguageCode } from '../i18n/i18n';
 import { MeetingKind, Translated, formatTimer, meetingTitleKey } from './shared';
 
 @Component({
@@ -7,7 +8,7 @@ import { MeetingKind, Translated, formatTimer, meetingTitleKey } from './shared'
   template: `
 <div class="schedule-heading">
   <div>
-    <h2>{{ t(meetingTitleKey(meeting())) }}</h2>
+    <h2>{{ i18n.tFor(language(), meetingTitleKey(meeting())) }}</h2>
     <p class="schedule-times">{{ meetingTimes() }}</p>
   </div>
   <span class="schedule-count">{{ timers().length }} {{ timers().length === 1 ? t('schedule.item') : t('schedule.items') }}</span>
@@ -26,8 +27,8 @@ import { MeetingKind, Translated, formatTimer, meetingTitleKey } from './shared'
       >
         <span class="schedule-index">{{ (index + 1).toString().padStart(2, '0') }}</span>
         <span class="schedule-content">
-          <span class="schedule-title">{{ i18n.talkTitle(talk) }}</span>
-          <span class="schedule-section">{{ i18n.sectionName(talk.meetingSectionNameInternal) }}</span>
+          <span class="schedule-title">{{ i18n.talkTitleFor(language(), talk) }}</span>
+          <span class="schedule-section">{{ i18n.sectionNameFor(language(), talk.meetingSectionNameInternal) }}</span>
         </span>
         <span class="schedule-duration">
           {{ formatTimer(talk.actualDurationSecs) }}
@@ -67,6 +68,7 @@ import { MeetingKind, Translated, formatTimer, meetingTitleKey } from './shared'
   host: { class: 'schedule-card' },
 })
 export class ScheduleCard extends Translated {
+  readonly language = input.required<LanguageCode>();
   readonly meeting = input.required<MeetingKind>();
   readonly meetingTimes = input.required<string>();
   readonly timers = input.required<TimerInfo[]>();
