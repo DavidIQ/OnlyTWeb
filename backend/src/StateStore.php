@@ -113,6 +113,7 @@ final class StateStore
             'weekend_end' => "TEXT NOT NULL DEFAULT '11:45'",
             'adaptive_mode' => "TEXT NOT NULL DEFAULT 'none'",
             'congregation_language' => "TEXT NOT NULL DEFAULT 'en'",
+            'midweek_imported_at' => 'REAL NULL',
         ];
         $hadCongregationLanguage = in_array('congregation_language', $settingsColumns, true);
         foreach ($addedSettings as $column => $definition) {
@@ -162,6 +163,9 @@ final class StateStore
         }
 
         return [
+            'midweekImportedAt' => $settings['midweek_imported_at'] === null
+                ? null
+                : (float)$settings['midweek_imported_at'],
             'settings' => [
                 'countUpByDefault' => (bool)$settings['count_up_by_default'],
                 'allowCountUpToggle' => (bool)$settings['allow_count_up_toggle'],
@@ -219,7 +223,8 @@ final class StateStore
              SET count_up_by_default = :count_up, allow_count_up_toggle = :allow_toggle,
                  circuit_visit = :circuit_visit, midweek_start = :midweek_start, midweek_end = :midweek_end,
                  weekend_day = :weekend_day, weekend_start = :weekend_start, weekend_end = :weekend_end,
-                 adaptive_mode = :adaptive_mode, congregation_language = :congregation_language
+                 adaptive_mode = :adaptive_mode, congregation_language = :congregation_language,
+                 midweek_imported_at = :midweek_imported_at
              WHERE id = 1'
         );
         $settings->execute([
@@ -233,6 +238,7 @@ final class StateStore
             'weekend_end' => $state['settings']['weekendEnd'],
             'adaptive_mode' => $state['settings']['adaptiveMode'],
             'congregation_language' => $state['settings']['congregationLanguage'],
+            'midweek_imported_at' => $state['midweekImportedAt'],
         ]);
 
         $status = $this->database->prepare(

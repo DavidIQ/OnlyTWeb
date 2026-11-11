@@ -222,7 +222,7 @@ export class App implements OnInit, OnDestroy {
   private statusReceivedAt = Date.now();
   private settingsFetchedAt = 0;
   private refreshInProgress = false;
-  private expiryCheckComplete = false;
+  private maintenanceCheckComplete = false;
   private authCheckInProgress = false;
   private retryDelayMs = 1000;
   private previewRequest = 0;
@@ -771,9 +771,9 @@ export class App implements OnInit, OnDestroy {
     }
     let nextRefreshDelay = document.hidden ? HIDDEN_POLL_MS : POLL_MS;
     try {
-      if (!this.isDisplayMode && !this.isProgressMode && this.authenticated && !this.expiryCheckComplete) {
-        await this.api.resetExpiredTimers();
-        this.expiryCheckComplete = true;
+      if (!this.isDisplayMode && !this.isProgressMode && this.authenticated && !this.maintenanceCheckComplete) {
+        const maintenance = await this.api.runOperatorMaintenance();
+        this.maintenanceCheckComplete = !maintenance.pending;
       }
 
       // Settings rarely change, so they are not fetched on every poll.

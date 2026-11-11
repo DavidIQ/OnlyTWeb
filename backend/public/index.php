@@ -109,6 +109,57 @@ function resetTimerRecords(array &$state): void
     unset($timer);
 }
 
+function resetExpiredTimerState(array &$state): bool
+{
+    $firstStart = null;
+    foreach ($state['timerInfo'] as $timer) {
+        if ($timer['startTime'] !== null && ($firstStart === null || $timer['startTime'] < $firstStart)) {
+            $firstStart = $timer['startTime'];
+        }
+    }
+    if ($firstStart === null || date('Y-m-d', (int)$firstStart) >= date('Y-m-d')) {
+        return false;
+    }
+
+    resetTimerRecords($state);
+    if ($state['status']['isRunning']) {
+        $state['status'] = [
+            'talkId' => null,
+            'targetSeconds' => 0,
+            'isRunning' => false,
+            'startedAt' => null,
+            'elapsedSeconds' => 0,
+            'closingSecs' => 30,
+        ];
+    }
+    $state['settings']['circuitVisit'] = false;
+    ScheduleSync::applyCircuitVisit($state);
+    return true;
+}
+
+function midweekImportIsDue(array $state): bool
+{
+    if (!ScheduleSync::hasMeeting($state, MidweekSchedule::MEETING)) {
+        return false;
+    }
+    $importedAt = $state['midweekImportedAt'];
+    return $importedAt === null || (int)date('oW', (int)$importedAt) < (int)date('oW');
+}
+
+function importMidweekSchedule(array &$state, bool $isCircuitVisit, ?array $feedMeeting): void
+{
+    $state['timerInfo'] = array_values(array_filter(
+        $state['timerInfo'],
+        static fn(array $item): bool => $item['meeting'] !== MidweekSchedule::MEETING
+    ));
+    $state['settings']['circuitVisit'] = $isCircuitVisit;
+    foreach (MidweekSchedule::build($isCircuitVisit, $feedMeeting) as $item) {
+        $state['timerInfo'][] = ScheduleSync::toTimer($item, MidweekSchedule::MEETING);
+    }
+    ScheduleSync::applyCircuitVisit($state);
+    $state['midweekImportedAt'] = microtime(true);
+}
+
 function &findTimer(array &$state, int $talkId): array
 {
     foreach ($state['timerInfo'] as &$timer) {
@@ -327,22 +378,13 @@ function handleRequest(): never
             $replace = ($body['replace'] ?? false) === true;
             $feedMeeting = MeetingFeed::currentMeeting(true);
             $imported = $store->transact(static function (array &$state) use ($isCircuitVisit, $feedMeeting, $replace): bool {
-                if ($replace) {
-                    if ($state['status']['isRunning']) {
-                        throw new ApiException(409, 'The schedule cannot be re-imported while a timer is running.', 'timer_running_edit');
-                    }
-                    $state['timerInfo'] = array_values(array_filter(
-                        $state['timerInfo'],
-                        static fn(array $item): bool => $item['meeting'] !== MidweekSchedule::MEETING
-                    ));
-                } elseif (ScheduleSync::hasMeeting($state, MidweekSchedule::MEETING)) {
+                if (!$replace && ScheduleSync::hasMeeting($state, MidweekSchedule::MEETING)) {
                     return false;
                 }
-                $state['settings']['circuitVisit'] = $isCircuitVisit;
-                foreach (MidweekSchedule::build($isCircuitVisit, $feedMeeting) as $item) {
-                    $state['timerInfo'][] = ScheduleSync::toTimer($item, MidweekSchedule::MEETING);
+                if ($replace && $state['status']['isRunning']) {
+                    throw new ApiException(409, 'The schedule cannot be re-imported while a timer is running.', 'timer_running_edit');
                 }
-                ScheduleSync::applyCircuitVisit($state);
+                importMidweekSchedule($state, $isCircuitVisit, $feedMeeting);
                 return true;
             });
             respond(['success' => true, 'imported' => $imported], $imported ? 201 : 200);
@@ -398,34 +440,43 @@ function handleRequest(): never
         }));
     }
 
-    if ($path === '/api/v1/timers/reset-expired') {
+    if ($path === '/api/v1/operator/maintenance') {
         if ($method !== 'POST') {
             throw new ApiException(405, 'Method not allowed.');
         }
-        respond($store->transact(static function (array &$state): array {
-            $firstStart = null;
-            foreach ($state['timerInfo'] as $timer) {
-                if ($timer['startTime'] !== null && ($firstStart === null || $timer['startTime'] < $firstStart)) {
-                    $firstStart = $timer['startTime'];
-                }
-            }
-            if ($firstStart === null || date('Y-m-d', (int)$firstStart) >= date('Y-m-d')) {
-                return ['reset' => false];
-            }
+        $maintenance = $store->transact(static function (array &$state): array {
+            $reset = resetExpiredTimerState($state);
+            $importDue = midweekImportIsDue($state);
+            return [
+                'reset' => $reset,
+                'importDue' => $importDue,
+                'pending' => $importDue && $state['status']['isRunning'],
+            ];
+        });
+        if (!$maintenance['importDue'] || $maintenance['pending']) {
+            respond([
+                'reset' => $maintenance['reset'],
+                'imported' => false,
+                'pending' => $maintenance['pending'],
+            ]);
+        }
 
-            resetTimerRecords($state);
-            if ($state['status']['isRunning']) {
-                $state['status'] = [
-                    'talkId' => null,
-                    'targetSeconds' => 0,
-                    'isRunning' => false,
-                    'startedAt' => null,
-                    'elapsedSeconds' => 0,
-                    'closingSecs' => 30,
+        $feedMeeting = MeetingFeed::currentMeeting(true);
+        $result = $store->transact(static function (array &$state) use ($feedMeeting, $maintenance): array {
+            $reset = resetExpiredTimerState($state) || $maintenance['reset'];
+            if (!midweekImportIsDue($state) || $state['status']['isRunning']) {
+                return [
+                    'reset' => $reset,
+                    'imported' => false,
+                    'pending' => midweekImportIsDue($state) && $state['status']['isRunning'],
                 ];
             }
-            return ['reset' => true];
-        }));
+
+            $state['settings']['circuitVisit'] = false;
+            importMidweekSchedule($state, false, $feedMeeting);
+            return ['reset' => $reset, 'imported' => true, 'pending' => false];
+        });
+        respond($result);
     }
 
     if (preg_match('#^/api/v1/timers/(\d+)$#', $path, $matches) === 1) {

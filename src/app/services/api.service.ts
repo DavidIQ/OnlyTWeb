@@ -146,8 +146,10 @@ export class ApiService {
     return firstValueFrom(this.http.post(`${this.baseUrl}/timers/reset`, {}));
   }
 
-  resetExpiredTimers(): Promise<{ reset: boolean }> {
-    return firstValueFrom(this.http.post<{ reset: boolean }>(`${this.baseUrl}/timers/reset-expired`, {}));
+  runOperatorMaintenance(): Promise<{ reset: boolean; imported: boolean; pending: boolean }> {
+    return firstValueFrom(
+      this.http.post<{ reset: boolean; imported: boolean; pending: boolean }>(`${this.baseUrl}/operator/maintenance`, {}),
+    );
   }
 
   stopTimer(talkId: number): Promise<unknown> {
