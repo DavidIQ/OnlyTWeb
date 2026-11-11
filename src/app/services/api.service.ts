@@ -146,6 +146,10 @@ export class ApiService {
     return firstValueFrom(this.http.post(`${this.baseUrl}/timers/reset`, {}));
   }
 
+  resetExpiredTimers(): Promise<{ reset: boolean }> {
+    return firstValueFrom(this.http.post<{ reset: boolean }>(`${this.baseUrl}/timers/reset-expired`, {}));
+  }
+
   stopTimer(talkId: number): Promise<unknown> {
     return firstValueFrom(this.http.delete(`${this.baseUrl}/timers/${talkId}`));
   }

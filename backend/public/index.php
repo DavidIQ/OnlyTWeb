@@ -95,6 +95,20 @@ function timersResponse(array $state, ?int $talkId = null): array
     ];
 }
 
+function resetTimerRecords(array &$state): void
+{
+    foreach ($state['timerInfo'] as &$timer) {
+        $timer['completedTimeSecs'] = null;
+        $timer['startTime'] = null;
+        $timer['endTime'] = null;
+        if ($timer['adaptedDurationSecs'] !== null) {
+            $timer['adaptedDurationSecs'] = null;
+            $timer['actualDurationSecs'] = $timer['modifiedDurationSecs'] ?? $timer['originalDurationSecs'];
+        }
+    }
+    unset($timer);
+}
+
 function &findTimer(array &$state, int $talkId): array
 {
     foreach ($state['timerInfo'] as &$timer) {
@@ -379,17 +393,38 @@ function handleRequest(): never
             if ($state['status']['isRunning']) {
                 throw new ApiException(409, 'Timers cannot be reset while a timer is running.', 'timer_running_edit');
             }
-            foreach ($state['timerInfo'] as &$timer) {
-                $timer['completedTimeSecs'] = null;
-                $timer['startTime'] = null;
-                $timer['endTime'] = null;
-                if ($timer['adaptedDurationSecs'] !== null) {
-                    $timer['adaptedDurationSecs'] = null;
-                    $timer['actualDurationSecs'] = $timer['modifiedDurationSecs'] ?? $timer['originalDurationSecs'];
+            resetTimerRecords($state);
+            return ['success' => true];
+        }));
+    }
+
+    if ($path === '/api/v1/timers/reset-expired') {
+        if ($method !== 'POST') {
+            throw new ApiException(405, 'Method not allowed.');
+        }
+        respond($store->transact(static function (array &$state): array {
+            $firstStart = null;
+            foreach ($state['timerInfo'] as $timer) {
+                if ($timer['startTime'] !== null && ($firstStart === null || $timer['startTime'] < $firstStart)) {
+                    $firstStart = $timer['startTime'];
                 }
             }
-            unset($timer);
-            return ['success' => true];
+            if ($firstStart === null || date('Y-m-d', (int)$firstStart) >= date('Y-m-d')) {
+                return ['reset' => false];
+            }
+
+            resetTimerRecords($state);
+            if ($state['status']['isRunning']) {
+                $state['status'] = [
+                    'talkId' => null,
+                    'targetSeconds' => 0,
+                    'isRunning' => false,
+                    'startedAt' => null,
+                    'elapsedSeconds' => 0,
+                    'closingSecs' => 30,
+                ];
+            }
+            return ['reset' => true];
         }));
     }
 

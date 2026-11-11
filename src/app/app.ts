@@ -222,6 +222,7 @@ export class App implements OnInit, OnDestroy {
   private statusReceivedAt = Date.now();
   private settingsFetchedAt = 0;
   private refreshInProgress = false;
+  private expiryCheckComplete = false;
   private authCheckInProgress = false;
   private retryDelayMs = 1000;
   private previewRequest = 0;
@@ -385,6 +386,7 @@ export class App implements OnInit, OnDestroy {
     }
     if (this.authenticated) {
       void this.loadPreview();
+      void this.refresh();
     }
     this.authCheckInProgress = false;
     this.changeDetector.markForCheck();
@@ -404,6 +406,7 @@ export class App implements OnInit, OnDestroy {
       await this.api.login(pin);
       this.authenticated = true;
       void this.loadPreview();
+      void this.refresh();
     } catch (error) {
       this.pinError = error instanceof HttpErrorResponse && error.status === 429 ? 'error.pin_locked' : 'error.invalid_pin';
     } finally {
@@ -768,6 +771,11 @@ export class App implements OnInit, OnDestroy {
     }
     let nextRefreshDelay = document.hidden ? HIDDEN_POLL_MS : POLL_MS;
     try {
+      if (!this.isDisplayMode && !this.isProgressMode && this.authenticated && !this.expiryCheckComplete) {
+        await this.api.resetExpiredTimers();
+        this.expiryCheckComplete = true;
+      }
+
       // Settings rarely change, so they are not fetched on every poll.
       const settingsDue = !this.settings || Date.now() - this.settingsFetchedAt >= SETTINGS_POLL_MS;
       const [timers, settings] = await Promise.all([
