@@ -1080,6 +1080,7 @@ h2 {
 
 .display-mode.running .display-time {
   color: #3ddc84;
+  font-size: clamp(128px, 29vw, 418px);
 }
 
 .display-mode.closing .display-time {
@@ -1093,6 +1094,10 @@ h2 {
 @media (max-width: 520px) {
   .display-time {
     font-size: clamp(88px, 22vw, 140px);
+  }
+
+  .display-mode.running .display-time {
+    font-size: clamp(104px, 26vw, 164px);
   }
 }
 
