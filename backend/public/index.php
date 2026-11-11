@@ -233,7 +233,7 @@ function handleRequest(): never
         Auth::require();
     }
 
-    $store = new StateStore();
+    $store = new StateStore($method === 'GET');
     if ($path === '/api') {
         if ($method !== 'GET') {
             throw new ApiException(405, 'Method not allowed.');
@@ -270,7 +270,7 @@ function handleRequest(): never
 
     if ($path === '/api/v1/settings') {
         if ($method === 'GET') {
-            respond($store->transact(static fn(array &$state): array => $state['settings']));
+            respond($store->read(static fn(array $state): array => $state['settings']));
         }
         if ($method === 'PUT') {
             $body = requestBody();
@@ -424,7 +424,7 @@ function handleRequest(): never
         if ($method !== 'GET') {
             throw new ApiException(405, 'Method not allowed.');
         }
-        respond($store->transact(static fn(array &$state): array => timersResponse($state)));
+        respond($store->read(static fn(array $state): array => timersResponse($state)));
     }
 
     if ($path === '/api/v1/timers/reset') {
@@ -482,8 +482,8 @@ function handleRequest(): never
     if (preg_match('#^/api/v1/timers/(\d+)$#', $path, $matches) === 1) {
         $talkId = (int)$matches[1];
         if ($method === 'GET') {
-            respond($store->transact(
-                static fn(array &$state): array => timersResponse($state, $talkId)
+            respond($store->read(
+                static fn(array $state): array => timersResponse($state, $talkId)
             ));
         }
         if ($method === 'PUT') {

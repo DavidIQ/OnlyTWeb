@@ -7,7 +7,7 @@ final class StateStore
 {
     private PDO $database;
 
-    public function __construct()
+    public function __construct(bool $readOnly = false)
     {
         $storageDirectory = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'storage';
         if (!is_dir($storageDirectory) && !mkdir($storageDirectory, 0770, true) && !is_dir($storageDirectory)) {
@@ -20,8 +20,13 @@ final class StateStore
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         ]);
         $this->database->exec('PRAGMA busy_timeout = 5000');
-        $this->database->exec('PRAGMA journal_mode = WAL');
-        $this->initializeSchema();
+        if (!$readOnly || !$this->schemaIsCurrent()) {
+            $this->database->exec('PRAGMA journal_mode = WAL');
+            $this->initializeSchema();
+        }
+        if ($readOnly) {
+            $this->database->exec('PRAGMA query_only = ON');
+        }
     }
 
     /** @return string[] */
@@ -64,6 +69,60 @@ final class StateStore
             }
             throw $exception;
         }
+    }
+
+    public function read(callable $query): mixed
+    {
+        $this->database->beginTransaction();
+        try {
+            $state = $this->loadState();
+            ScheduleSync::ensureWeekend($state);
+            $result = $query($state);
+            $this->database->commit();
+            return $result;
+        } catch (Throwable $exception) {
+            if ($this->database->inTransaction()) {
+                $this->database->rollBack();
+            }
+            throw $exception;
+        }
+    }
+
+    private function schemaIsCurrent(): bool
+    {
+        $requiredColumns = [
+            'timer_info' => [
+                'talk_id', 'meeting', 'talk_key', 'talk_title', 'section_internal',
+                'original_duration_secs', 'modified_duration_secs', 'completed_time_secs',
+                'count_up', 'closing_secs', 'sort_order', 'start_time', 'end_time',
+                'adapted_duration_secs',
+            ],
+            'app_settings' => [
+                'id', 'count_up_by_default', 'allow_count_up_toggle', 'circuit_visit',
+                'midweek_start', 'midweek_end', 'weekend_day', 'weekend_start', 'weekend_end',
+                'adaptive_mode', 'congregation_language', 'midweek_imported_at',
+            ],
+            'timer_status' => [
+                'id', 'talk_id', 'target_seconds', 'is_running', 'started_at',
+                'elapsed_seconds', 'closing_secs',
+            ],
+            'report_recipients' => ['email', 'sort_order'],
+        ];
+
+        foreach ($requiredColumns as $table => $required) {
+            $columns = array_column($this->database->query("PRAGMA table_info($table)")->fetchAll(), 'name');
+            if (array_diff($required, $columns) !== []) {
+                return false;
+            }
+        }
+
+        $hasSettings = (int)$this->database->query('SELECT EXISTS(SELECT 1 FROM app_settings WHERE id = 1)')->fetchColumn();
+        $hasStatus = (int)$this->database->query('SELECT EXISTS(SELECT 1 FROM timer_status WHERE id = 1)')->fetchColumn();
+        $needsSectionMigration = (int)$this->database->query(
+            "SELECT EXISTS(SELECT 1 FROM timer_info WHERE talk_id IN (5000, 7002) AND section_internal <> 'CircuitOverseer')"
+        )->fetchColumn();
+
+        return $hasSettings === 1 && $hasStatus === 1 && $needsSectionMigration === 0;
     }
 
     private function initializeSchema(): void
