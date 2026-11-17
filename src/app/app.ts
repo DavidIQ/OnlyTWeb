@@ -159,6 +159,24 @@ const SETTINGS_POLL_MS = 30000;
   @if (toastVisible) {
     <div class="toast" role="status">{{ t(toastText) }}</div>
   }
+  @if (showReportPrompt) {
+    <div class="report-prompt-backdrop" (keydown.escape)="dismissReportPrompt()">
+      <section
+        class="report-prompt"
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="report-prompt-title"
+        aria-describedby="report-prompt-message"
+      >
+        <h2 id="report-prompt-title">{{ t('report.promptTitle') }}</h2>
+        <p id="report-prompt-message">{{ t('report.promptSend') }}</p>
+        <div class="report-prompt-actions">
+          <button class="report-prompt-no" type="button" (click)="dismissReportPrompt()">{{ t('report.promptNo') }}</button>
+          <button class="start-button" type="button" (click)="acceptReportPrompt()">{{ t('report.promptYes') }}</button>
+        </div>
+      </section>
+    </div>
+  }
   <app-install-banner></app-install-banner>
 </main>
 }
@@ -188,6 +206,7 @@ export class App implements OnInit, OnDestroy {
   toastVisible = false;
   toastText: TranslationKey = 'settings.saved';
   showReport = false;
+  showReportPrompt = false;
   reportFrom = '';
   reportRecipients = '';
   get congregationLanguage(): LanguageCode {
@@ -782,6 +801,8 @@ export class App implements OnInit, OnDestroy {
         this.api.getTimers(),
         settingsDue ? this.api.getSettings() : Promise.resolve(null),
       ]);
+      const previousStatus = this.status;
+      const previousTimerInfo = this.timerInfo;
       this.timerInfo = timers.timerInfo;
       this.status = timers.status;
       this.statusReceivedAt = Date.now();
@@ -806,6 +827,17 @@ export class App implements OnInit, OnDestroy {
         this.selectedTalkId = (next ?? visible[0])?.talkId ?? null;
       }
 
+      if (
+        this.authenticated &&
+        !this.isDisplayMode &&
+        !this.isProgressMode &&
+        !this.showReport &&
+        !this.showReportPrompt &&
+        this.didFinishLastPart(previousStatus, previousTimerInfo, timers.status, timers.timerInfo)
+      ) {
+        this.showReportPrompt = true;
+      }
+
       this.errorMessage = '';
       this.setReconnecting(false);
       this.retryDelayMs = 1000;
@@ -828,6 +860,39 @@ export class App implements OnInit, OnDestroy {
         }, nextRefreshDelay);
       }
     }
+  }
+
+  private didFinishLastPart(
+    previousStatus: TimerStatus | null,
+    previousTimers: TimerInfo[],
+    status: TimerStatus,
+    timers: TimerInfo[],
+  ): boolean {
+    const talkId = previousStatus?.isRunning ? previousStatus.talkId : null;
+    if (talkId === null || status.isRunning) {
+      return false;
+    }
+
+    const previousTalk = previousTimers.find((talk) => talk.talkId === talkId);
+    if (!previousTalk) {
+      return false;
+    }
+    const meetingTimers = previousTimers.filter((talk) => talk.meeting === previousTalk.meeting);
+    if (meetingTimers[meetingTimers.length - 1]?.talkId !== talkId) {
+      return false;
+    }
+
+    const completedTalk = timers.find((talk) => talk.talkId === talkId);
+    return completedTalk !== undefined && completedTalk.completedTimeSecs !== null && completedTalk.endTime !== null;
+  }
+
+  dismissReportPrompt(): void {
+    this.showReportPrompt = false;
+  }
+
+  acceptReportPrompt(): void {
+    this.dismissReportPrompt();
+    void this.openReport();
   }
 
   selectTalk(talkId: number): void {
